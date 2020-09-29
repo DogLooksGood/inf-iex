@@ -1,0 +1,93 @@
+#+TITLE: INF IEX
+
+* INF IEX
+To provide a better interaction experientce beteew emacs elixir buffer and IEx sessions.
+And this package is not exquisite yet, but it will be.
+
+THIS PACKAGE IS WORKING IN PROGRESS.
+
+* Installations
+
+Following is the installation with [[https://github.com/jwiegley/use-package][use-package]], Tested under Emacs 27.1 .
+
+** With [[https://github.com/quelpa/quelpa][quelpa]].
+
+#+begin_src emacs-lisp
+  (use-package inf-iex
+    :hook (elixir-mode . inf-iex-minor-mode)
+    :quelpa (rime :fetcher github
+                  :repo "DogLooksGood/inf-iex"))
+#+end_src
+
+** With [[https://github.com/raxod502/straight.el][straight]].
+
+#+begin_src emacs-lisp
+  (use-package inf-iex
+    :hook (elixir-mode . inf-iex-minor-mode)
+    :straight (rime :type git
+                    :host github
+                    :repo "DogLooksGood/inf-iex"))
+#+end_src
+
+* IEx Sessions
+There're two ways to play.
+
+** Start IEx in Emacs comint buffer.
+
+Inf-IEx contains a very basic support for IEx session with comint. At this moment, 
+it doesn't have a nicer code completion or navigation. But it allows us to eval code in code buffer.
+
+** Start IEx in a tmux window.
+
+A nice package, [[https://github.com/emacsorphanage/emamux][emamux]], help us to interact with tmux sessions, and it is be used by Inf-IEx.
+By using a native IEx session in shell, we have code completion, and it also gives us the ability to 
+to connect through a SSH connection(running SSH session in a local tmux).
+
+* Summary of shortcuts
+
+|--------------+-------------------------------------------------------|
+| Key Sequence | Functionality                                         |
+|--------------+-------------------------------------------------------|
+| C-c C-z      | Start IEx comint buffer.                              |
+| C-c C-v      | Switch between sending target, tmux or comint buffer. |
+| C-c C-r      | Send current region to target.                        |
+| C-c C-l      | Send current line to target.                          |
+| C-c C-k      | Reload current module.                                |
+| C-c C-c k    | Compile current file.                                 |
+| C-c M-p p    | Add Pry section to above line.                        |
+| C-c M-p k    | Remove Pry section in this file.                      |
+| C-c M-p l    | Goto Pry section.                                     |
+| C-c C-i      | Send i {thing-at-point} to IEx                        |
+
+* Start comint IEx session
+
+Use ~C-c C-z~, project root detection should work.
+
+* Code evaluation
+
+Evaluate current line with ~C-c C-l~ and region with ~C-c C-r~.
+
+Use with universal argument, will wrap your code with a ~:timer.tc~.
+
+NOTE: You may want to put playground code in comment, prefix ~#~ will be trimed.
+
+* Switch sending target
+
+Use ~C-c C-v~ to switch target between tmux and comint buffer.
+
+* Reload module
+
+Use ~C-c C-k.~
+
+* Compile module
+
+Use ~C-c C-c C-k~.
+
+* Pry
+
+Insert a pry at above line with ~C-c M-p p~. Press ~RET~ on that pry button to remove it.
+
+~C-c C-i~ can be used to inspect values when working with Pry.
+
+
+
