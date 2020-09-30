@@ -87,11 +87,15 @@
     keymap)
   "Keymap for IEx buffer.")
 
+(defun inf-iex-minor-mode-init ()
+  (modify-syntax-entry ?. "_" elixir-mode-syntax-table))
+
 (define-minor-mode inf-iex-minor-mode
   "Minor mode for Interaction with IEx."
   nil
   "inf-IEx"
-  inf-iex-minor-mode-map)
+  inf-iex-minor-mode-map
+  (inf-iex-minor-mode-init))
 
 (define-derived-mode inf-iex-mode comint-mode "inf-IEx"
   "Major mode for IEx session buffer."
@@ -207,7 +211,6 @@ Will only work when we are in a project."
                             (replace-regexp-in-string "\n#" "\n")
                             (replace-regexp-in-string " +" " ")
                             (inf-iex--format-eval))))
-    (message "Eval: %s" code-to-eval)
     (inf-iex--send code-to-eval)))
 
 (defun inf-iex-eval-line (arg)
@@ -222,7 +225,6 @@ Will only work when we are in a project."
                         " +"
                         " "
                         (inf-iex--format-eval code))))
-    (message "Eval: %s" code-to-eval)
     (inf-iex--send code-to-eval)))
 
 (defun inf-iex-compile ()

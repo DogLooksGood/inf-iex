@@ -50,11 +50,15 @@
   (let ((code code))
     (cl-loop for alias in aliases do
       (setq code
-            (replace-regexp-in-string (format "\\<%s\\>" (regexp-quote (car alias)))
-                               (cdr alias)
-                               code
-                               t
-                               t)))
+            (replace-regexp-in-string
+             (format "\\_<%s\\(\\..+?\\)?\\_>" (regexp-quote (car alias)))
+             (lambda (s)
+               (if-let ((m (match-string 1 s)))
+                   (format "%s%s" (cdr alias) (match-string 1 s))
+                 (cdr alias)))
+             code
+             t
+             t)))
     code))
 
 (defun inf-iex--parse-eval-code (mod code &optional buf)
