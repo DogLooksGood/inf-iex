@@ -88,7 +88,9 @@
   "Keymap for IEx buffer.")
 
 (defun inf-iex-patch-syntax-table ()
-  (modify-syntax-entry ?. "_" elixir-mode-syntax-table))
+  (modify-syntax-entry ?. "_" elixir-mode-syntax-table)
+  (modify-syntax-entry ?_ "_" elixir-mode-syntax-table)
+  (modify-syntax-entry ?% "_" elixir-mode-syntax-table))
 
 (define-minor-mode inf-iex-minor-mode
   "Minor mode for Interaction with IEx."

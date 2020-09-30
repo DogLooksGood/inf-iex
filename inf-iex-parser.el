@@ -6,7 +6,8 @@
 
 (defun inf-iex--parse-alias (&optional buf)
   (let ((buf (or buf (current-buffer)))
-        (result ()))
+        (result ())
+        (case-fold-search nil))
     (with-current-buffer buf
       (save-mark-and-excursion
         (goto-char (point-min))
@@ -21,7 +22,8 @@
 
 (defun inf-iex--parse-import (&optional buf)
   (let ((buf (or buf (current-buffer)))
-        (result ()))
+        (result ())
+        (case-fold-search nil))
     (with-current-buffer buf
       (save-mark-and-excursion
         (goto-char (point-min))
@@ -35,7 +37,8 @@
 
 (defun inf-iex--parse-requires (&optional buf)
   (let ((buf (or buf (current-buffer)))
-        (result ()))
+        (result ())
+        (case-fold-search nil))
     (with-current-buffer buf
       (save-mark-and-excursion
         (goto-char (point-min))
@@ -47,11 +50,13 @@
     result))
 
 (defun inf-iex--replace-code-with-aliases (code aliases)
-  (let ((code code))
+  (let ((case-fold-search nil)
+        (code code))
     (cl-loop for alias in aliases do
       (setq code
             (replace-regexp-in-string
-             (format "\\_<%s\\(\\[_a-z].*?\\)?\\_>" (regexp-quote (car alias)))
+             (format "\\_<%s\\(\\.[_a-z].*?\\)?\\_>"
+                     (regexp-quote (car alias)))
              (lambda (s)
                (if-let ((m (match-string 1 s)))
                    (format "%s%s" (cdr alias) (match-string 1 s))
@@ -66,7 +71,6 @@
          (imports (inf-iex--parse-import buf))
          (imports (if mod (cons mod imports) imports))
          (requires (inf-iex--parse-requires buf)))
-    (message "%s" aliases)
     (format
      "Code.eval_quoted(quote do (%s %s %s) end) |> elem(0)"
      ;; imports
