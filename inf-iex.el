@@ -107,7 +107,7 @@ Will only work when we are in a project."
              (project-current))
     (file-relative-name
      (buffer-file-name (current-buffer))
-     (project-root (project-current)))))
+     (cdr (project-current)))))
 
 (defun inf-iex-i ()
   (interactive)
@@ -254,7 +254,7 @@ Will only work when we are in a project."
       (inf-iex--send (message "r %s\n" module-name)))))
 
 (defun inf-iex--make-iex-buffer-name ()
-  (format "IEx[%s]" (project-root (project-current))))
+  (format "IEx[%s]" (cdr (project-current))))
 
 (defun inf-iex--get-process ()
   (get-process (inf-iex--make-iex-buffer-name)))
@@ -264,7 +264,7 @@ Will only work when we are in a project."
   (let ((inf-iex-buffer (inf-iex--make-iex-buffer-name)))
     (if (and inf-iex-buffer (comint-check-proc inf-iex-buffer))
         (pop-to-buffer inf-iex-buffer)
-      (let* ((proj-root (project-root (project-current)))
+      (let* ((proj-root (cdr (project-current)))
              (name (inf-iex--make-iex-buffer-name))
              (cmd (split-string (read-from-minibuffer "Command to start IEx session: " "iex -S mix")))
              (exe (car cmd))
