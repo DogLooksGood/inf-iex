@@ -51,7 +51,7 @@
     (cl-loop for alias in aliases do
       (setq code
             (replace-regexp-in-string
-             (format "\\_<%s\\(\\..+?\\)?\\_>" (regexp-quote (car alias)))
+             (format "\\_<%s\\(\\[_a-z].*?\\)?\\_>" (regexp-quote (car alias)))
              (lambda (s)
                (if-let ((m (match-string 1 s)))
                    (format "%s%s" (cdr alias) (match-string 1 s))

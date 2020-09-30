@@ -87,7 +87,7 @@
     keymap)
   "Keymap for IEx buffer.")
 
-(defun inf-iex-minor-mode-init ()
+(defun inf-iex-patch-syntax-table ()
   (modify-syntax-entry ?. "_" elixir-mode-syntax-table))
 
 (define-minor-mode inf-iex-minor-mode
@@ -95,7 +95,8 @@
   nil
   "inf-IEx"
   inf-iex-minor-mode-map
-  (inf-iex-minor-mode-init))
+  (when inf-iex-minor-mode
+    (inf-iex-patch-syntax-table)))
 
 (define-derived-mode inf-iex-mode comint-mode "inf-IEx"
   "Major mode for IEx session buffer."
