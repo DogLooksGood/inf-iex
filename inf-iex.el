@@ -46,6 +46,9 @@
 (require 'dash)
 (require 'cl-lib)
 
+(require 'inf-iex-eval)
+(require 'inf-iex-parser)
+
 (defvar inf-iex-minor-mode-map
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "C-c C-v") 'inf-iex-toggle-send-target)
@@ -191,7 +194,7 @@ Will only work when we are in a project."
 
 (defun inf-iex--format-eval (s)
   (if-let ((module-name (inf-iex--relative-module-name)))
-      (format "Code.eval_quoted(quote do (import %s; %s) end) |> elem(0)" module-name s)
+      (inf-iex--parse-eval-code module-name s)
     (format "(%s)" s)))
 
 (defun inf-iex-eval (arg)
@@ -230,7 +233,8 @@ Will only work when we are in a project."
 (defun inf-iex--relative-module-name ()
   (save-mark-and-excursion
     (re-search-backward
-     "defmodule \\([[:graph:]]+\\)")
+     "defmodule \\([[:graph:]]+\\)"
+     nil t 1)
     (match-string 1)))
 
 (defun inf-iex--module-name ()
