@@ -1,5 +1,8 @@
 ;;; -*- lexical-binding: t -*-
 
+(require 'subr-x)
+(require 'cl-lib)
+
 (defun inf-iex--remove-text-properties (text)
   (set-text-properties 0 (length text) nil text)
   text)
@@ -53,17 +56,14 @@
   (let ((case-fold-search nil)
         (code code))
     (cl-loop for alias in aliases do
-      (setq code
-            (replace-regexp-in-string
-             (format "\\_<%s\\(\\.[_a-z].*?\\)?\\_>"
-                     (regexp-quote (car alias)))
-             (lambda (s)
-               (if-let ((m (match-string 1 s)))
-                   (format "%s%s" (cdr alias) (match-string 1 s))
-                 (cdr alias)))
-             code
-             t
-             t)))
+             (setq code
+                   (replace-regexp-in-string
+                    (format "\\([^.]\\)\\_<%s\\_>" (regexp-quote (car alias)))
+                    (lambda (s)
+                      (format "%s%s" (match-string 1 s) (cdr alias)))
+                    (concat " " code)
+                    t
+                    t)))
     code))
 
 (defun inf-iex--parse-eval-code (mod code &optional buf)

@@ -48,6 +48,7 @@
 
 (require 'inf-iex-eval)
 (require 'inf-iex-parser)
+(require 'inf-iex-observer)
 
 (defvar inf-iex-minor-mode-map
   (let ((keymap (make-sparse-keymap)))
@@ -88,9 +89,9 @@
   "Keymap for IEx buffer.")
 
 (defun inf-iex-patch-syntax-table ()
-  (modify-syntax-entry ?. "_" elixir-mode-syntax-table)
   (modify-syntax-entry ?_ "_" elixir-mode-syntax-table)
-  (modify-syntax-entry ?% "_" elixir-mode-syntax-table))
+  (modify-syntax-entry ?% "_" elixir-mode-syntax-table)
+  (modify-syntax-entry ?? "-" elixir-mode-syntax-table))
 
 (define-minor-mode inf-iex-minor-mode
   "Minor mode for Interaction with IEx."
