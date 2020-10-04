@@ -70,31 +70,21 @@
   (let* ((aliases (inf-iex--parse-alias buf)))
     (inf-iex--replace-code-with-aliases code aliases)))
 
-(defun inf-iex--make-reset-code (mod &optional buf)
+(defun inf-iex--make-setup-code (mod respawn &optional buf)
   "Make the setup code for BUF or current buffer."
   (let* ((imports (inf-iex--parse-import buf))
          (imports (if mod (cons mod imports) imports))
          (requires (inf-iex--parse-requires buf)))
-    (format "respawn\n%s %s"
-            (string-join
-             (mapcar (lambda (s) (format "import %s;" s)) imports)
-             " ")
-            (string-join
-             (mapcar (lambda (s) (format "require %s;" s)) requires)
-             " "))))
-
-(defun inf-iex--make-setup-code (mod &optional buf)
-  "Make the setup code for BUF or current buffer."
-  (let* ((imports (inf-iex--parse-import buf))
-         (imports (if mod (cons mod imports) imports))
-         (requires (inf-iex--parse-requires buf)))
-    (format "%s %s"
-            (string-join
-             (mapcar (lambda (s) (format "import %s;" s)) imports)
-             " ")
-            (string-join
-             (mapcar (lambda (s) (format "require %s;" s)) requires)
-             " "))))
+    (concat (if respawn
+                "respawn\n"
+              "")
+            (format "%s %s"
+                    (string-join
+                     (mapcar (lambda (s) (format "import %s;" s)) imports)
+                     " ")
+                    (string-join
+                     (mapcar (lambda (s) (format "require %s;" s)) requires)
+                     " ")))))
 
 (provide 'inf-iex-parser)
 ;;; inf-iex-parser.el ends here

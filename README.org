@@ -51,21 +51,28 @@ to connect through a SSH connection(running SSH session in a local tmux).
 | C-c C-z      | Start IEx comint buffer.                              |
 | C-c C-v      | Switch between sending target, tmux or comint buffer. |
 | C-c C-r      | Send current region to target.                        |
-| C-c C-l      | Send current line to target.                          |
+| C-c C-c      | Send current line to target.                          |
 | C-c C-k      | Reload current module.                                |
-| C-c C-c k    | Compile current file.                                 |
+| C-c C-l      | Compile current file.                                 |
 | C-c M-p p    | Add Pry section to above line.                        |
 | C-c M-p k    | Remove Pry section in this file.                      |
 | C-c M-p l    | Goto Pry section.                                     |
-| C-c C-i      | Send i {thing-at-point} to IEx                        |
+| C-c C-i      | Send i {thing-at-point} to IEx.                       |
+| C-c M-c      | Import this module and its imports & requires.        |
 
 * Start comint IEx session
 
 Use ~C-c C-z~, project root detection should work.
 
+* Execution Context
+
+Use ~C-c M-c~ to import current module and module's imports and requires.
+
+Use with universal argument, will respawn a new session.
+
 * Code evaluation
 
-Evaluate current line with ~C-c C-l~ and region with ~C-c C-r~.
+Evaluate current line with ~C-c C-c~ and region with ~C-c C-r~.
 
 Use with universal argument, will wrap your code with a ~:timer.tc~.
 
@@ -81,7 +88,7 @@ Use ~C-c C-k.~
 
 * Compile module
 
-Use ~C-c C-c C-k~.
+Use ~C-c C-l~.
 
 * Pry
 

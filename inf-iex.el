@@ -65,7 +65,6 @@
     (define-key keymap (kbd "C-c M-p l") 'inf-iex-goto-pry)
     (define-key keymap (kbd "C-c C-i") 'inf-iex-i)
     (define-key keymap (kbd "C-c M-c") 'inf-iex-setup-context)
-    (define-key keymap (kbd "C-c M-r") 'inf-iex-reset-context)
     keymap)
   "Keymap for interaction with IEx buffer.")
 
@@ -215,17 +214,10 @@ Will only work when we are in a project."
                             (inf-iex--format-eval))))
     (inf-iex--send code-to-eval)))
 
-(defun inf-iex-reset-context ()
-  (interactive)
+(defun inf-iex-setup-context (arg)
+  (interactive "P")
   (if-let ((mod (inf-iex--module-name)))
-      (let* ((code (inf-iex--make-reset-code mod)))
-        (inf-iex--send code))
-    (message "Can't get module name in this buffer!")))
-
-(defun inf-iex-setup-context ()
-  (interactive)
-  (if-let ((mod (inf-iex--module-name)))
-      (let* ((code (inf-iex--make-setup-code mod)))
+      (let* ((code (inf-iex--make-setup-code mod (if arg t nil))))
         (inf-iex--send code))
     (message "Can't get module name in this buffer!")))
 

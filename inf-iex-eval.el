@@ -7,12 +7,6 @@
 
 ;; Utilities
 
-(defun inf-iex--make-eval-fn (code)
-  "Wrap the string CODE into a special named function definition.
-
-Return the definition in string format."
-  (format "def __iex_inf_eval do\n%s\nend" code))
-
 (defun inf-iex--make-time-measure (code)
   "Wrap the string CODE into a :timer.tc call."
   (format ":timer.tc(fn -> %s end) | >elem(0)" code))
