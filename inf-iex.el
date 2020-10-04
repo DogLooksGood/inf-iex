@@ -279,10 +279,12 @@ Will only work when we are in a project."
       (let* ((proj-root (cdr (project-current)))
              (name (inf-iex--make-iex-buffer-name))
              (cmd (split-string (read-from-minibuffer "Command to start IEx session: " "iex -S mix")))
+             (env (read-from-minibuffer "Environment: " "dev"))
              (exe (car cmd))
              (args (cdr cmd))
              (comint-buffer
-              (let ((default-directory proj-root))
+              (let ((default-directory proj-root)
+                    (process-environment (nconc (list (format "MIX_ENV=%s" env)) process-environment)))
                 (apply #'make-comint-in-buffer name (generate-new-buffer name) exe nil args))))
         (set-buffer comint-buffer)
         (inf-iex-mode)
