@@ -66,7 +66,7 @@
                     t)))
     code))
 
-(defun inf-iex--parse-eval-code (mod code &optional buf)
+(defun inf-iex--parse-eval-code (code &optional buf)
   (let* ((aliases (inf-iex--parse-alias buf)))
     (inf-iex--replace-code-with-aliases code aliases)))
 

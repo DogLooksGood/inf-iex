@@ -25,9 +25,10 @@
 ;;; Code:
 
 (require 'ansi-color)
+(require 'inf-iex-util)
+(require 'dash)
 
 (defvar inf-iex--shell-output-filter-in-progress nil)
-
 
 (defun inf-iex--shell-end-of-output? (string)
   "Return non-nil if STRING ends with the prompt."

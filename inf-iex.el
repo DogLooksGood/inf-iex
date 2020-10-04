@@ -48,6 +48,7 @@
 
 (require 'inf-iex-eval)
 (require 'inf-iex-parser)
+(require 'inf-iex-util)
 ;; (require 'inf-iex-observer)
 ;; (require 'inf-iex-send)
 
@@ -90,20 +91,11 @@
     keymap)
   "Keymap for IEx buffer.")
 
-(defun inf-iex-patch-syntax-table ()
-  (modify-syntax-entry ?_ "_" elixir-mode-syntax-table)
-  (modify-syntax-entry ?% "_" elixir-mode-syntax-table)
-  (modify-syntax-entry ?? "-" elixir-mode-syntax-table))
-
-(defvar inf-iex--comint-prompt-regexp "\\(iex(.+)[0-9]*>\\)")
-
 (define-minor-mode inf-iex-minor-mode
   "Minor mode for Interaction with IEx."
   nil
   "inf-IEx"
-  inf-iex-minor-mode-map
-  (when inf-iex-minor-mode
-    (inf-iex-patch-syntax-table)))
+  inf-iex-minor-mode-map)
 
 (define-derived-mode inf-iex-mode comint-mode "inf-IEx"
   "Major mode for IEx session buffer."
@@ -208,7 +200,7 @@ Will only work when we are in a project."
 
 (defun inf-iex--format-eval (s)
   (if-let ((module-name (inf-iex--relative-module-name)))
-      (inf-iex--parse-eval-code module-name s)
+      (inf-iex--parse-eval-code s)
     (format "(%s)" s)))
 
 (defun inf-iex-eval (arg)
@@ -278,12 +270,6 @@ Will only work when we are in a project."
     (if (not module-name)
         (message "Can't get module name in this file!")
       (inf-iex--send (message "r %s\n" module-name)))))
-
-(defun inf-iex--make-iex-buffer-name ()
-  (format "IEx[%s]" (cdr (project-current))))
-
-(defun inf-iex--get-process ()
-  (get-process (inf-iex--make-iex-buffer-name)))
 
 (defun inf-iex-start ()
   (interactive)
