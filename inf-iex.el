@@ -238,7 +238,7 @@ Will only work when we are in a project."
                    (string-remove-prefix "# ")))
          (code (if arg (inf-iex--measure-time raw) raw))
          (code-to-eval (replace-regexp-in-string
-                        " #"
+                        " +"
                         " "
                         (inf-iex--format-eval code))))
     (inf-iex--send code-to-eval)))
