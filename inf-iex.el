@@ -48,21 +48,23 @@
 
 (require 'inf-iex-eval)
 (require 'inf-iex-parser)
-(require 'inf-iex-observer)
+;; (require 'inf-iex-observer)
+;; (require 'inf-iex-send)
 
 (defvar inf-iex-minor-mode-map
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "C-c C-v") 'inf-iex-toggle-send-target)
     (define-key keymap (kbd "C-c C-r") 'inf-iex-eval)
-    (define-key keymap (kbd "C-c C-l") 'inf-iex-eval-line)
+    (define-key keymap (kbd "C-c C-c") 'inf-iex-eval-line)
     (define-key keymap (kbd "C-c C-k") 'inf-iex-reload)
-    (define-key keymap (kbd "C-c C-c C-k") 'inf-iex-compile)
+    (define-key keymap (kbd "C-c C-l") 'inf-iex-compile)
     (define-key keymap (kbd "C-c C-z") 'inf-iex-start)
     (define-key keymap (kbd "C-c M-p p") 'inf-iex-set-pry)
     (define-key keymap (kbd "C-c M-p k") 'inf-iex-unset-pry)
     (define-key keymap (kbd "C-c M-p l") 'inf-iex-goto-pry)
     (define-key keymap (kbd "C-c C-i") 'inf-iex-i)
-    (define-key keymap (kbd "C-c M-t") 'inf-iex-measure-time)
+    (define-key keymap (kbd "C-c M-c") 'inf-iex-setup-context)
+    (define-key keymap (kbd "C-c M-r") 'inf-iex-reset-context)
     keymap)
   "Keymap for interaction with IEx buffer.")
 
@@ -93,6 +95,8 @@
   (modify-syntax-entry ?% "_" elixir-mode-syntax-table)
   (modify-syntax-entry ?? "-" elixir-mode-syntax-table))
 
+(defvar inf-iex--comint-prompt-regexp "\\(iex(.+)[0-9]*>\\)")
+
 (define-minor-mode inf-iex-minor-mode
   "Minor mode for Interaction with IEx."
   nil
@@ -105,7 +109,9 @@
   "Major mode for IEx session buffer."
   nil
   "IEx"
-  inf-iex-mode-map)
+  inf-iex-mode-map
+  (setq-local comint-prompt-read-only t)
+  (setq-local comint-prompt-regexp inf-iex--comint-prompt-regexp))
 
 (defun inf-iex--proj-file-name ()
   "Return relative file name of current buffer in current project.
@@ -217,6 +223,20 @@ Will only work when we are in a project."
                             (inf-iex--format-eval))))
     (inf-iex--send code-to-eval)))
 
+(defun inf-iex-reset-context ()
+  (interactive)
+  (if-let ((mod (inf-iex--module-name)))
+      (let* ((code (inf-iex--make-reset-code mod)))
+        (inf-iex--send code))
+    (message "Can't get module name in this buffer!")))
+
+(defun inf-iex-setup-context ()
+  (interactive)
+  (if-let ((mod (inf-iex--module-name)))
+      (let* ((code (inf-iex--make-setup-code mod)))
+        (inf-iex--send code))
+    (message "Can't get module name in this buffer!")))
+
 (defun inf-iex-eval-line (arg)
   (interactive "P")
   (let* ((raw (->> (buffer-substring-no-properties (save-mark-and-excursion
@@ -226,7 +246,7 @@ Will only work when we are in a project."
                    (string-remove-prefix "# ")))
          (code (if arg (inf-iex--measure-time raw) raw))
          (code-to-eval (replace-regexp-in-string
-                        " +"
+                        " #"
                         " "
                         (inf-iex--format-eval code))))
     (inf-iex--send code-to-eval)))

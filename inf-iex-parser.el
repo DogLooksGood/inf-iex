@@ -67,21 +67,34 @@
     code))
 
 (defun inf-iex--parse-eval-code (mod code &optional buf)
-  (let* ((aliases (inf-iex--parse-alias buf))
-         (imports (inf-iex--parse-import buf))
+  (let* ((aliases (inf-iex--parse-alias buf)))
+    (inf-iex--replace-code-with-aliases code aliases)))
+
+(defun inf-iex--make-reset-code (mod &optional buf)
+  "Make the setup code for BUF or current buffer."
+  (let* ((imports (inf-iex--parse-import buf))
          (imports (if mod (cons mod imports) imports))
          (requires (inf-iex--parse-requires buf)))
-    (format
-     "Code.eval_quoted(quote do (%s %s %s) end) |> elem(0)"
-     ;; imports
-     (string-join
-      (mapcar (lambda (s) (format "import %s;" s)) imports)
-      " ")
-     ;; requires
-     (string-join
-      (mapcar (lambda (s) (format "require %s;" s)) requires)
-      " ")
-     (inf-iex--replace-code-with-aliases code aliases))))
+    (format "respawn\n%s %s"
+            (string-join
+             (mapcar (lambda (s) (format "import %s;" s)) imports)
+             " ")
+            (string-join
+             (mapcar (lambda (s) (format "require %s;" s)) requires)
+             " "))))
+
+(defun inf-iex--make-setup-code (mod &optional buf)
+  "Make the setup code for BUF or current buffer."
+  (let* ((imports (inf-iex--parse-import buf))
+         (imports (if mod (cons mod imports) imports))
+         (requires (inf-iex--parse-requires buf)))
+    (format "%s %s"
+            (string-join
+             (mapcar (lambda (s) (format "import %s;" s)) imports)
+             " ")
+            (string-join
+             (mapcar (lambda (s) (format "require %s;" s)) requires)
+             " "))))
 
 (provide 'inf-iex-parser)
 ;;; inf-iex-parser.el ends here
