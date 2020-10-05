@@ -59,6 +59,7 @@ to connect through a SSH connection(running SSH session in a local tmux).
 | C-c M-p l    | Goto Pry section.                                     |
 | C-c C-i      | Send i {thing-at-point} to IEx.                       |
 | C-c M-c      | Import this module and its imports & requires.        |
+| C-c M-r      | Like ~C-c M-c~, but ~respawn~.                            |
 
 * Start comint IEx session
 
@@ -68,7 +69,7 @@ Use ~C-c C-z~, project root detection should work.
 
 Use ~C-c M-c~ to import current module and module's imports and requires.
 
-Use with universal argument, will respawn a new session.
+Use ~C-c M-r~ to respawn a new session.
 
 * Code evaluation
 

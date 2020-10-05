@@ -65,6 +65,7 @@
     (define-key keymap (kbd "C-c M-p l") 'inf-iex-goto-pry)
     (define-key keymap (kbd "C-c C-i") 'inf-iex-i)
     (define-key keymap (kbd "C-c M-c") 'inf-iex-setup-context)
+    (define-key keymap (kbd "C-c M-r") 'inf-iex-respawn-context)
     keymap)
   "Keymap for interaction with IEx buffer.")
 
@@ -200,27 +201,30 @@ Will only work when we are in a project."
 (defun inf-iex--format-eval (s)
   (format "(%s)"
           (if-let ((module-name (inf-iex--relative-module-name)))
-              (inf-iex--parse-eval-code s)
+              (inf-iex--parse-eval-code s module-name)
             s)))
+
+(defun inf-iex-respawn-context ()
+  (interactive)
+  (if-let ((mod (inf-iex--module-name)))
+      (let* ((code (inf-iex--make-setup-code mod t)))
+        (inf-iex--send code))
+    (message "Can't get module name in this buffer!")))
+
+(defun inf-iex-setup-context ()
+  (interactive)
+  (if-let ((mod (inf-iex--module-name)))
+      (let* ((code (inf-iex--make-setup-code mod nil)))
+        (inf-iex--send code))
+    (message "Can't get module name in this buffer!")))
 
 (defun inf-iex-eval-region (arg)
   (interactive "P")
   (let* ((raw (->> (buffer-substring-no-properties (region-beginning) (region-end))
                    (string-remove-prefix "# ")))
          (code (if arg (inf-iex--measure-time raw) raw))
-         (code-to-eval (->> code
-                            (replace-regexp-in-string "^ *#" "")
-                            (replace-regexp-in-string "\n#" "\n")
-                            (replace-regexp-in-string " +" " ")
-                            (inf-iex--format-eval))))
+         (code-to-eval (inf-iex--format-eval-code code)))
     (inf-iex--send code-to-eval)))
-
-(defun inf-iex-setup-context (arg)
-  (interactive "P")
-  (if-let ((mod (inf-iex--module-name)))
-      (let* ((code (inf-iex--make-setup-code mod (if arg t nil))))
-        (inf-iex--send code))
-    (message "Can't get module name in this buffer!")))
 
 (defun inf-iex-eval-line (arg)
   (interactive "P")
@@ -230,10 +234,7 @@ Will only work when we are in a project."
                                                    (line-end-position))
                    (string-remove-prefix "# ")))
          (code (if arg (inf-iex--measure-time raw) raw))
-         (code-to-eval (replace-regexp-in-string
-                        " +"
-                        " "
-                        (inf-iex--format-eval code))))
+         (code-to-eval (inf-iex--format-eval-code code)))
     (inf-iex--send code-to-eval)))
 
 (defun inf-iex-compile ()

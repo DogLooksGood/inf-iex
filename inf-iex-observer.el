@@ -22,6 +22,7 @@
 
 ;;; Code:
 
+(require 'inf-iex-send)
 
 
 (provide 'inf-iex-observer)
