@@ -55,7 +55,7 @@
 (defvar inf-iex-minor-mode-map
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "C-c C-v") 'inf-iex-toggle-send-target)
-    (define-key keymap (kbd "C-c C-r") 'inf-iex-eval)
+    (define-key keymap (kbd "C-c C-r") 'inf-iex-eval-region)
     (define-key keymap (kbd "C-c C-c") 'inf-iex-eval-line)
     (define-key keymap (kbd "C-c C-k") 'inf-iex-reload)
     (define-key keymap (kbd "C-c C-l") 'inf-iex-compile)
@@ -198,11 +198,12 @@ Will only work when we are in a project."
       (inf-iex--tmux-send string)))))
 
 (defun inf-iex--format-eval (s)
-  (if-let ((module-name (inf-iex--relative-module-name)))
-      (inf-iex--parse-eval-code s)
-    (format "(%s)" s)))
+  (format "(%s)"
+          (if-let ((module-name (inf-iex--relative-module-name)))
+              (inf-iex--parse-eval-code s)
+            s)))
 
-(defun inf-iex-eval (arg)
+(defun inf-iex-eval-region (arg)
   (interactive "P")
   (let* ((raw (->> (buffer-substring-no-properties (region-beginning) (region-end))
                    (string-remove-prefix "# ")))
