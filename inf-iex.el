@@ -198,12 +198,6 @@ Will only work when we are in a project."
      ((eq 'tmux inf-iex-send-target)
       (inf-iex--tmux-send string)))))
 
-(defun inf-iex--format-eval (s)
-  (format "(%s)"
-          (if-let ((module-name (inf-iex--relative-module-name)))
-              (inf-iex--parse-eval-code s module-name)
-            s)))
-
 (defun inf-iex-respawn-context ()
   (interactive)
   (if-let ((mod (inf-iex--module-name)))
@@ -241,13 +235,6 @@ Will only work when we are in a project."
   (interactive)
   (when (buffer-modified-p) (save-buffer))
   (inf-iex--send (message "c \"%s\"\n" (inf-iex--proj-file-name))))
-
-(defun inf-iex--relative-module-name ()
-  (save-mark-and-excursion
-    (re-search-backward
-     "defmodule \\([[:graph:]]+\\)"
-     nil t 1)
-    (match-string 1)))
 
 (defun inf-iex--module-name ()
   (save-mark-and-excursion

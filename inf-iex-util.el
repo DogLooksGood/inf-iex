@@ -34,5 +34,12 @@
 (defun inf-iex--get-process ()
   (get-process (inf-iex--make-iex-buffer-name)))
 
+(defun inf-iex--relative-module-name ()
+  (save-mark-and-excursion
+    (re-search-backward
+     "defmodule \\([[:graph:]]+\\)"
+     nil t 1)
+    (match-string 1)))
+
 (provide 'inf-iex-util)
 ;;; inf-iex-util.el ends here

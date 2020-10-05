@@ -70,10 +70,9 @@
             (push mod result)))))
     result))
 
-(defun inf-iex--format-eval-code (code &optional buf)
+(defun inf-iex--format-eval-code (code)
   "Currently do nothing."
-  (let* ((mod (inf-iex--relative-module-name))
-         (lines (split-string code "\n"))
+  (let* ((lines (split-string code "\n"))
          (lines (mapcar (lambda (s) (string-trim s)) lines)))
     (->> (string-join lines "\n")
          (replace-regexp-in-string "^ *#" "")
