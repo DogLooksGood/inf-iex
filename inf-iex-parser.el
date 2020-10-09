@@ -71,10 +71,16 @@
     result))
 
 (defun inf-iex--format-eval-code (code)
-  "Currently do nothing."
+  "Format the code for sending to IEx.
+
+Remove # and iex> for those code in comment.
+Wrap with parenthese to support multiple lines.
+"
   (let* ((lines (split-string code "\n"))
          (lines (mapcar (lambda (s) (string-trim s)) lines)))
     (->> (string-join lines "\n")
+         (string-remove-prefix "# ")
+         (replace-regexp-in-string "^ *iex> *" "")
          (replace-regexp-in-string "^ *#" "")
          (replace-regexp-in-string "\n#" "\n")
          (format "(%s)"))))

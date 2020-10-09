@@ -28,15 +28,23 @@
 ;;
 ;; Available Shortcuts:
 ;;
-;; C-c C-v           - Switch between sending target, tmux or comint buffer.
-;; C-c C-r           - Send current region to target.
-;; C-c C-l           - Send current line to target.
-;; C-c C-k           - Reload current module.
-;; C-c C-c k         - Compile current file.
-;; C-c M-p p         - Add Pry button to above line.
-;; C-c M-p k         - Remove Pry button in this file.
-;; C-c M-p l         - Goto Pry button.
-;; C-c C-z           - Start IEx comint buffer.
+;; |--------------+--------------------------------------------------------|
+;; | Key Sequence | Functionality                                          |
+;; |--------------+--------------------------------------------------------|
+;; | C-c C-z      | Start IEx comint buffer.                               |
+;; | C-c C-v      | Switch between sending target, tmux or comint buffer.  |
+;; | C-c C-c      | Send region or current line to target.                 |
+;; | C-c C-n      | Eval and wrap code with :timer.tc, return nanoseconds. |
+;; | C-c C-w      | Eval with bindings those read from minibuffer.         |
+;; | C-c C-k      | Reload current module.                                 |
+;; | C-c C-l      | Compile current file.                                  |
+;; | C-c M-p p    | Add Pry section to above line.                         |
+;; | C-c M-p k    | Remove Pry section in this file.                       |
+;; | C-c M-p l    | Goto Pry section.                                      |
+;; | C-c C-i      | Send i {thing-at-point} to IEx.                        |
+;; | C-c M-c      | Import this module and its imports & requires.         |
+;; | C-c M-r      | Like ~C-c M-c~, but ~respawn~.                         |
+
 
 ;;; Code:
 
@@ -49,14 +57,16 @@
 (require 'inf-iex-eval)
 (require 'inf-iex-parser)
 (require 'inf-iex-util)
-;; (require 'inf-iex-observer)
-;; (require 'inf-iex-send)
+(require 'inf-iex-send)
+(require 'inf-iex-observer)
 
 (defvar inf-iex-minor-mode-map
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "C-c C-v") 'inf-iex-toggle-send-target)
-    (define-key keymap (kbd "C-c C-r") 'inf-iex-eval-region)
-    (define-key keymap (kbd "C-c C-c") 'inf-iex-eval-line)
+    (define-key keymap (kbd "C-c C-c") 'inf-iex-eval)
+    (define-key keymap (kbd "C-c C-w") 'inf-iex-eval-with-binding)
+    (define-key keymap (kbd "C-c C-n") 'inf-iex-eval-measure-time)
+    (define-key keymap (kbd "C-c C-s") 'inf-iex-query-state-swarm)
     (define-key keymap (kbd "C-c C-k") 'inf-iex-reload)
     (define-key keymap (kbd "C-c C-l") 'inf-iex-compile)
     (define-key keymap (kbd "C-c C-z") 'inf-iex-start)
@@ -166,9 +176,8 @@ Will only work when we are in a project."
     (overlay-put inf-iex--pry-overlay 'face 'inf-iex-pry-face)
     (inf-iex-reload)))
 
-(defun inf-iex--measure-time (raw)
-  (interactive)
-  (format ":timer.tc(fn -> %s end) |> elem(0)" raw))
+(defun inf-iex--measure-time (code)
+  (format ":timer.tc(fn -> %s end) |> elem(0)" code))
 
 (defun inf-iex-toggle-send-target ()
   (interactive)
@@ -212,24 +221,35 @@ Will only work when we are in a project."
         (inf-iex--send code))
     (message "Can't get module name in this buffer!")))
 
-(defun inf-iex-eval-region (arg)
+(defun inf-iex-eval (arg)
   (interactive "P")
-  (let* ((raw (->> (buffer-substring-no-properties (region-beginning) (region-end))
-                   (string-remove-prefix "# ")))
-         (code (if arg (inf-iex--measure-time raw) raw))
-         (code-to-eval (inf-iex--format-eval-code code)))
+  (-let* (((beg . end) (if (region-active-p)
+                          (car (region-bounds))
+                         (cons (line-beginning-position) (line-end-position))))
+          (raw (buffer-substring-no-properties beg end))
+          (code-to-eval (inf-iex--format-eval-code raw)))
     (inf-iex--send code-to-eval)))
 
-(defun inf-iex-eval-line (arg)
-  (interactive "P")
-  (let* ((raw (->> (buffer-substring-no-properties (save-mark-and-excursion
-                                                     (back-to-indentation)
-                                                     (point))
-                                                   (line-end-position))
-                   (string-remove-prefix "# ")))
-         (code (if arg (inf-iex--measure-time raw) raw))
-         (code-to-eval (inf-iex--format-eval-code code)))
-    (inf-iex--send code-to-eval)))
+(defun inf-iex-eval-with-binding ()
+  (interactive)
+  (-let* (((beg . end) (if (region-active-p)
+                          (car (region-bounds))
+                         (cons (line-beginning-position) (line-end-position))))
+          (raw (buffer-substring-no-properties beg end))
+          (code (inf-iex--format-eval-code raw))
+          (binding (read-from-minibuffer "Eval with: " "")))
+    (inf-iex--send
+     (format "with %s do\n%s\nend" binding code))))
+
+(defun inf-iex-eval-measure-time ()
+  (interactive)
+  (-let* (((beg . end) (if (region-active-p)
+                          (car (region-bounds))
+                         (cons (line-beginning-position) (line-end-position))))
+          (raw (buffer-substring-no-properties beg end))
+          (code (inf-iex--format-eval-code raw)))
+    (inf-iex--send
+     (inf-iex--measure-time code))))
 
 (defun inf-iex-compile ()
   (interactive)
