@@ -19,15 +19,15 @@
 
 (defun inf-iex--make-exp-for-reload (mod)
   "Return the code to reload module MOD."
-  (format "r %s" mod))
+  (message "r %s" mod))
 
 (defun inf-iex--make-exp-for-compile (file)
   "Return the code to compile FILE."
-  (format "c \"%s\"" file))
+  (message "c \"%s\"" file))
 
 (defun inf-iex--make-exp-for-inspect (term)
   "Return the code to inpect TERM."
-  (format "i %s" term))
+  (message "i %s" term))
 
 (defun inf-iex--make-exp-for-eval-with (binding code)
   (format "with %s do\n%s\nend" binding code))

@@ -14,7 +14,7 @@ Result depends on syntax table's comment character."
        (save-mark-and-excursion
          (while (eq (char-before) 32)
            (backward-char 1))
-         (not (looking-back "[,:]")))))
+         (not (looking-back "[,:]" 10)))))
 
 (defun inf-iex--bound-of-current-exp ()
   (let ((beg (save-mark-and-excursion (back-to-indentation) (point)))

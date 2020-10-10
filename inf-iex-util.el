@@ -59,7 +59,9 @@ Will only work when we are in a project."
      (cdr (project-current)))))
 
 (defun inf-iex--create-button (text face action)
-  (let ((b (insert-button text 'action action)))
+  (let ((b (insert-button text
+                          'action action
+                          'follow-link t)))
     (-> (make-overlay (button-start b) (button-end b))
         (overlay-put 'face face))))
 

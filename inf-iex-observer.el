@@ -24,6 +24,14 @@
 
 (require 'inf-iex-send)
 
+(defface inf-iex--back-button
+  '((((class color) (background dark))
+     (:box t :inherit font-lock-comment-face))
+    (((class color) (background light))
+     (:box t :inherit font-lock-comment-face)))
+  "The button face for back to iex in inspector."
+  :group 'inf-iex)
+
 (defface inf-iex--define-var-button
   '((((class color) (background dark))
      (:box t :inherit font-lock-constant-face))
@@ -37,7 +45,7 @@
      (:box t :inherit font-lock-string-face))
     (((class color) (background light))
      (:box t :inherit font-lock-string-face)))
-  "The button face for define var in inspector."
+  "The button face for refresh in inspector."
   :group 'inf-iex)
 
 (defface inf-iex--kill-button
@@ -47,6 +55,8 @@
      (:box t :inherit font-lock-warning-face)))
   "The button face for kill process in inspector."
   :group 'inf-iex)
+
+(defvar inf-iex--inspector-buffer-name "*INF IEx Value Inspector*")
 
 (defvar inf-iex--state-variable-name "state"
   "The default variable name when you define state as a variable.")
@@ -77,40 +87,60 @@
           inf-iex--state-variable-name pid-str pid-str))
 
 (defun inf-iex--query-state-execute (opt query)
-  (let* ((items (inf-iex--query-items query))
-         (pid-str (-> (--first (string-equal opt (car it)) items)
-                      (cadr)
-                      (string-trim-left "#PID")))
-         (state (inf-iex--send-string-async
-                 (message "%s" (inf-iex--make-exp-for-print-state pid-str)))))
-    (with-current-buffer (get-buffer-create "*INF IEx Value Inspector*")
-      (setq buffer-read-only nil)
-      (erase-buffer)
-      (insert (format "# Query via %s\n" (car query)))
-      (insert (format "# Get state from %s\n" opt))
-      (insert (format "# #PID%s\n" pid-str))
-      (insert "\n")
-      (inf-iex--create-button "[Define Variable]" 'inf-iex--define-var-button
-                              (lambda (_ignored)
-                                (inf-iex--send
-                                 (inf-iex--make-exp-for-define-state-var pid-str))))
-      (insert "\n")
-      (inf-iex--create-button "[Refresh Inspector]" 'inf-iex--refresh-button
-                              (lambda (_ignored)
-                                (inf-iex--query-state-execute opt query)))
-      (insert "\n")
-      (inf-iex--create-button "[Kill Process]" 'inf-iex--kill-button
-                              (lambda (_ignored)
-                                (inf-iex--send
-                                 (inf-iex--make-exp-for-kill-process pid-str))))
-      (insert "\n\n")
-      (insert (inf-iex--trim-find-result state))
-      (if (> (point-max) inf-iex-inspect-font-lock-limit)
-          (text-mode)
-        (elixir-mode))
-      (goto-char (point-min))
-      (setq buffer-read-only t)
-      (pop-to-buffer (current-buffer)))))
+  (let ((iex-buf (inf-iex--make-iex-buffer-name)))
+    (if (not iex-buf)
+        (message "IEx session not available for this project!")
+      (let* ((items (inf-iex--query-items query))
+             (pid-str (-some-> (--first (string-equal opt (car it)) items)
+                        (cadr)
+                        (string-trim-left "#PID")))
+             (_ (unless pid-str (error "Process is not exist or terminated!")))
+             (state (inf-iex--send-string-async
+                     (message "%s" (inf-iex--make-exp-for-print-state pid-str)))))
+        (with-current-buffer (get-buffer-create inf-iex--inspector-buffer-name)
+          (setq buffer-read-only nil)
+          (erase-buffer)
+          (insert (format "# Query via %s\n" (car query)))
+          (insert (format "# The state of %s\n" opt))
+          (insert (format "# #PID%s\n" pid-str))
+          (insert "\n")
+          (inf-iex--create-button "[Define Variable]" 'inf-iex--define-var-button
+                                  (lambda (_ignored)
+                                    (message "Define state as variable `%s'" inf-iex--state-variable-name)
+                                    (inf-iex--send
+                                     (inf-iex--make-exp-for-define-state-var pid-str))))
+          (insert " ")
+          (inf-iex--create-button "[Refresh Inspector]" 'inf-iex--refresh-button
+                                  (lambda (_ignored)
+                                    (let ((pos (point)))
+                                      (inf-iex--query-state-execute opt query)
+                                      (ignore-errors (goto-char pos)))))
+          (insert " ")
+          (inf-iex--create-button "[Kill Process]" 'inf-iex--kill-button
+                                  (lambda (_ignored)
+                                    (message "Kill process #PID%s" pid-str)
+                                    (inf-iex--send
+                                     (inf-iex--make-exp-for-kill-process pid-str))))
+          (insert "\n\n")
+          (inf-iex--create-button "[Back To IEx]" 'inf-iex--back-button
+                                  (lambda (_ignored)
+                                    (switch-to-buffer iex-buf)))
+          (insert " ")
+          (inf-iex--create-button "[Kill Buffer]" 'inf-iex--back-button
+                                  (lambda (_ignored)
+                                    (kill-buffer inf-iex--inspector-buffer-name)))
+          (insert " ")
+          (insert "\n\n")
+          (insert (inf-iex--trim-find-result state))
+          (if (or (not (featurep 'elixir-mode))
+                  (> (point-max) inf-iex-inspect-font-lock-limit))
+              (text-mode)
+            (elixir-mode))
+          (inf-iex-minor-mode)
+          (goto-char (point-min))
+          (setq buffer-read-only t))
+        (pop-to-buffer iex-buf)
+        (switch-to-buffer inf-iex--inspector-buffer-name)))))
 
 (defun inf-iex--query-items (query)
   (let* ((resp (-> (inf-iex--make-exp-for-query-process (cdr query))

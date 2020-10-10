@@ -83,7 +83,8 @@
 
 (defvar inf-iex-mode-map
   (let ((keymap (make-sparse-keymap)))
-    ;; (define-key keymap (kbd "TAB") 'completion-at-point)
+    (define-key keymap (kbd "C-c C-s s") 'inf-iex-query-state-swarm)
+    (define-key keymap (kbd "C-c C-s c") 'inf-iex-query-state-common)
     keymap)
   "Keymap for IEx buffer.")
 
