@@ -41,5 +41,22 @@
      nil t 1)
     (match-string 1)))
 
+(defun inf-iex--module-name ()
+  (save-mark-and-excursion
+    (goto-char (point-min))
+    (re-search-forward
+     "defmodule \\([[:graph:]]+\\)")
+    (match-string 1)))
+
+(defun inf-iex--proj-file-name ()
+  "Return relative file name of current buffer in current project.
+
+Will only work when we are in a project."
+  (when (and (buffer-file-name (current-buffer))
+             (project-current))
+    (file-relative-name
+     (buffer-file-name (current-buffer))
+     (cdr (project-current)))))
+
 (provide 'inf-iex-util)
 ;;; inf-iex-util.el ends here

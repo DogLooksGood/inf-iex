@@ -25,8 +25,15 @@
 ;;; Code:
 
 (require 'ansi-color)
-(require 'inf-iex-util)
+(require 'comint)
+(require 'emamux)
 (require 'dash)
+
+(require 'inf-iex-util)
+
+(defvar inf-iex-send-target
+  'process
+  "Can be `process' or `tmux'.")
 
 (defvar inf-iex--shell-output-filter-in-progress nil)
 
@@ -58,8 +65,8 @@
 
 (defun inf-iex--send-string (string)
   "Send STRING to hy PROCESS."
-  (-let [comint-output-filter-functions
-         '(inf-iex--shell-output-filter)]
+  (-let ((comint-output-filter-functions
+          '(inf-iex--shell-output-filter)))
     (inf-iex--internal-send-string string)))
 
 (defun inf-iex--send-string-async (string)
@@ -75,6 +82,34 @@
                   (accept-process-output proc nil 1000 t)))
       (set-buffer output-buffer)
       (ansi-color-apply (buffer-string)))))
+
+(defun inf-iex-toggle-send-target ()
+  (interactive)
+  (message "Set inf-iex send target to %s"
+           (if (eq 'process inf-iex-send-target)
+               (setq inf-iex-send-target 'tmux)
+             (setq inf-iex-send-target 'process))))
+
+(defun inf-iex--tmux-send (input)
+  (interactive)
+  (emamux:check-tmux-running)
+  (condition-case nil
+      (progn
+        (if (or current-prefix-arg (not (emamux:set-parameters-p)))
+            (emamux:set-parameters))
+        (let ((target (emamux:target-session)))
+          (setq emamux:last-command input)
+          (emamux:reset-prompt target)
+          (emamux:send-keys input)))
+    (quit (emamux:unset-parameters))))
+
+(defun inf-iex--send (string)
+  (ignore-errors
+    (cond
+     ((eq 'process inf-iex-send-target)
+      (comint-send-string (inf-iex--get-process) (format "%s\n" string)))
+     ((eq 'tmux inf-iex-send-target)
+      (inf-iex--tmux-send string)))))
 
 (provide 'inf-iex-send)
 ;;; inf-iex-send.el ends here
