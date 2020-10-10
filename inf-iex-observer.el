@@ -24,7 +24,7 @@
 
 (require 'inf-iex-send)
 
-(defvar inf-iex--common-query "")
+(defvar inf-iex--common-query "Process.list|>Stream.map(&({Keyword.get(Process.info(&1), :registered_name), &1}))|>Enum.filter(&elem(&1, 0))|>Enum.each(fn {n, pid} -> IO.puts \"#{inspect n}\t#{inspect pid}\" end)")
 
 (defvar inf-iex--swarm-query "Swarm.registered() |> Enum.each(fn {n, pid} -> IO.puts \"#{inspect n}\t#{inspect pid}\" end)")
 

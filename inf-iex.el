@@ -66,7 +66,8 @@
     (define-key keymap (kbd "C-c C-c") 'inf-iex-eval)
     (define-key keymap (kbd "C-c C-w") 'inf-iex-eval-with-binding)
     (define-key keymap (kbd "C-c C-n") 'inf-iex-eval-measure-time)
-    (define-key keymap (kbd "C-c C-s") 'inf-iex-query-state-swarm)
+    (define-key keymap (kbd "C-c C-s s") 'inf-iex-query-state-swarm)
+    (define-key keymap (kbd "C-c C-s c") 'inf-iex-query-state-common)
     (define-key keymap (kbd "C-c C-k") 'inf-iex-reload)
     (define-key keymap (kbd "C-c C-l") 'inf-iex-compile)
     (define-key keymap (kbd "C-c C-z") 'inf-iex-start)
@@ -221,7 +222,7 @@ Will only work when we are in a project."
         (inf-iex--send code))
     (message "Can't get module name in this buffer!")))
 
-(defun inf-iex-eval (arg)
+(defun inf-iex-eval (_arg)
   (interactive "P")
   (-let* (((beg . end) (if (region-active-p)
                           (car (region-bounds))
