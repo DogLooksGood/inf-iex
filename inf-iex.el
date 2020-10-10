@@ -4,7 +4,7 @@
 
 ;; Author: Shi Tianshu
 ;; Keywords: languages, tools
-;; Package-Requires: ((emacs "27.1") (dash "2.12.0") (cl-lib "0.6.1") (emamux "0.14"))
+;; Package-Requires: ((emacs "27.0") (dash "2.12.0") (cl-lib "0.6.1") (emamux "0.14"))
 ;; Version: 0.0.1
 
 ;; This program is free software; you can redistribute it and/or modify
