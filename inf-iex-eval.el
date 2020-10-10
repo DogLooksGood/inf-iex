@@ -15,7 +15,7 @@
 
 (defun inf-iex--make-exp-for-time-measure (code)
   "Wrap the string CODE into a :timer.tc call."
-  (format ":timer.tc(fn -> %s end) | >elem(0)" code))
+  (format ":timer.tc(fn -> %s end) |> elem(0)" code))
 
 (defun inf-iex--make-exp-for-reload (mod)
   "Return the code to reload module MOD."
