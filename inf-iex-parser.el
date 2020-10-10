@@ -3,71 +3,80 @@
 (require 'subr-x)
 (require 'cl-lib)
 
+(defun inf-iex--in-comment-p ()
+  "Returns non-nil if inside comment, else nil.
+Result depends on syntax table's comment character."
+  (interactive)
+  (nth 4 (syntax-ppss)))
+
+(defun inf-iex--exp-end-p ()
+  (and (zerop (car (syntax-ppss)))
+       (save-mark-and-excursion
+         (while (eq (char-before) 32)
+           (backward-char 1))
+         (not (looking-back "[,:]")))))
+
+(defun inf-iex--bound-of-current-exp ()
+  (let ((beg (save-mark-and-excursion (back-to-indentation) (point)))
+        end)
+    (save-mark-and-excursion
+      (goto-char (line-end-position))
+      (while (not (inf-iex--exp-end-p))
+        (forward-line 1)
+        (goto-char (line-end-position)))
+      (setq end (point)))
+    (cons beg end)))
+
 (defun inf-iex--remove-text-properties (text)
   (set-text-properties 0 (length text) nil text)
   text)
 
-(defun inf-iex--parse-attributes (&optional buf)
+(defun inf-iex--replace-module-constant (mod code)
+  (replace-regexp-in-string "__MODULE__" mod code t t))
+
+(defun inf-iex--parse-alias (mod &optional buf)
   (let ((buf (or buf (current-buffer)))
         (result ())
         (case-fold-search nil))
     (with-current-buffer buf
       (save-mark-and-excursion
         (goto-char (point-min))
-        (while (re-search-forward
-                "\\(@[_a-z0-9]+\\) +\\(.+\\)" nil t)
-          (let* ((attr (inf-iex--remove-text-properties (match-string 1)))
-                 (val (inf-iex--remove-text-properties (match-string 2))))
-            (unless (member attr
-                            '("@impl" "@moduledoc" "@doc" "@behaviour"
-                              "@before_compile"))
-              (push (cons attr val) result))))))
+        (while (re-search-forward "\\_<alias\\_>" nil t)
+          (unless (inf-iex--in-comment-p)
+            (let* ((bound (inf-iex--bound-of-current-exp))
+                   (code (->> (buffer-substring-no-properties (car bound) (cdr bound))
+                              (inf-iex--replace-module-constant mod))))
+              (push code result))))))
     result))
 
-
-(defun inf-iex--parse-alias (&optional buf)
+(defun inf-iex--parse-import (mod &optional buf)
   (let ((buf (or buf (current-buffer)))
         (result ())
         (case-fold-search nil))
     (with-current-buffer buf
       (save-mark-and-excursion
         (goto-char (point-min))
-        (while (re-search-forward
-                "alias \\([A-Z][.A-Za-z0-9]*\\)\\(?:, ?as: \\([A-Z][A-Za-z0-9]*\\)\\)?"
-                nil t)
-          (let* ((mod (inf-iex--remove-text-properties (match-string 1)))
-                 (alias (or (inf-iex--remove-text-properties (match-string 2))
-                            (car (reverse (split-string mod "\\."))))))
-            (push (cons alias mod) result)))))
+        (while (re-search-forward "\\_<import\\_>" nil t)
+          (unless (inf-iex--in-comment-p)
+            (let* ((bound (inf-iex--bound-of-current-exp))
+                   (code (->> (buffer-substring-no-properties (car bound) (cdr bound))
+                              (inf-iex--replace-module-constant mod))))
+              (push code result))))))
     result))
 
-(defun inf-iex--parse-import (&optional buf)
+(defun inf-iex--parse-requires (mod &optional buf)
   (let ((buf (or buf (current-buffer)))
         (result ())
         (case-fold-search nil))
     (with-current-buffer buf
       (save-mark-and-excursion
         (goto-char (point-min))
-        (while (re-search-forward
-                "import \\([A-Z][.A-Za-z0-9]*\\(?:, ?only: \\(\\[.+\\]\\)\\)?\\)"
-                nil t)
-
-          (let ((mod (inf-iex--remove-text-properties (match-string 1))))
-            (push mod result)))))
-    result))
-
-(defun inf-iex--parse-requires (&optional buf)
-  (let ((buf (or buf (current-buffer)))
-        (result ())
-        (case-fold-search nil))
-    (with-current-buffer buf
-      (save-mark-and-excursion
-        (goto-char (point-min))
-        (while (re-search-forward
-                "require \\([A-Z][.A-Za-z0-9]*\\)"
-                nil t)
-          (let ((mod (inf-iex--remove-text-properties (match-string 1))))
-            (push mod result)))))
+        (while (re-search-forward "\\_<require\\_>" nil t)
+          (unless (inf-iex--in-comment-p)
+            (let* ((bound (inf-iex--bound-of-current-exp))
+                   (code (->> (buffer-substring-no-properties (car bound) (cdr bound))
+                              (inf-iex--replace-module-constant mod))))
+              (push code result))))))
     result))
 
 (defun inf-iex--format-eval-code (code)
@@ -87,24 +96,17 @@ Wrap with parenthese to support multiple lines.
 
 (defun inf-iex--make-setup-code (mod respawn &optional buf)
   "Make the setup code for BUF or current buffer."
-  (let* ((imports (inf-iex--parse-import buf))
-         (imports (if mod (cons mod imports) imports))
-         (aliases (inf-iex--parse-alias buf))
-         (requires (inf-iex--parse-requires buf)))
+  (let* ((imports (inf-iex--parse-import mod buf))
+         (imports (if mod (cons (format "import %s" mod) imports) imports))
+         (aliases (inf-iex--parse-alias mod buf))
+         (requires (inf-iex--parse-requires mod buf)))
     (concat (if respawn
                 "respawn\n"
               "")
-            (format "%s %s %s"
-                    (string-join
-                     (mapcar (lambda (s) (format "import %s;" s)) imports)
-                     " ")
-                    (string-join
-                     (mapcar (lambda (s) (format "require %s;" s)) requires)
-                     " ")
-                    (string-join
-                     (mapcar (lambda (s) (format "alias %s, as: %s;" (cdr s) (car s)))
-                             aliases)
-                     " ")))))
+            (message "%s\n%s\n%s"
+                     (string-join aliases "\n")
+                     (string-join requires "\n")
+                     (string-join imports "\n")))))
 
 (provide 'inf-iex-parser)
 ;;; inf-iex-parser.el ends here
