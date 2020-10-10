@@ -24,9 +24,17 @@
 
 (require 'inf-iex-send)
 
-(defvar inf-iex--common-query "Process.list|>Stream.map(&({Keyword.get(Process.info(&1), :registered_name), &1}))|>Enum.filter(&elem(&1, 0))|>Enum.each(fn {n, pid} -> IO.puts \"#{inspect n}\t#{inspect pid}\" end)")
+(defconst inf-iex--print-format
+  "%s |>Enum.each(fn {n, pid} -> IO.puts \"#{inspect n}\t#{inspect pid}\" end)")
 
-(defvar inf-iex--swarm-query "Swarm.registered() |> Enum.each(fn {n, pid} -> IO.puts \"#{inspect n}\t#{inspect pid}\" end)")
+(defconst inf-iex--define-variable-format
+  "state = :sys.get_state(:erlang.list_to_pid('%s')); \"The state of #PID%s is defined as variable `state`.\"")
+
+(defvar inf-iex--common-query
+  '("Process Information" .  "Process.list|>Stream.map(&({Keyword.get(Process.info(&1), :registered_name), &1}))|>Enum.filter(&elem(&1, 0))"))
+
+(defvar inf-iex--swarm-query
+  '("Swarm" . "Swarm.registered()"))
 
 (defun inf-iex--trim-find-result (s)
   (string-trim-right s ":ok[\n ]+\\(?:nil[\n ]+\\)?\\(?:iex.+>[\n ]+\\)?"))
@@ -35,7 +43,8 @@
   (interactive)
   (if (eq inf-iex-send-target 'tmux)
       (message "Query state is not available for tmux target!")
-    (let* ((resp (-> (inf-iex--send-string-async (or query inf-iex--common-query))
+    (let* ((query (or query inf-iex--common-query))
+           (resp (-> (inf-iex--send-string-async (format inf-iex--print-format (cdr query)))
                      (inf-iex--trim-find-result)))
            (lines (split-string resp "\n"))
            (items (->> (mapcar (lambda (line)
@@ -51,6 +60,14 @@
       (with-current-buffer (get-buffer-create "*INF IEx Value Inspector*")
         (setq buffer-read-only nil)
         (erase-buffer)
+        (insert (format "# Query via %s\n" (car query)))
+        (insert (format "# Get state from %s\n" q))
+        (insert (format "# #PID%s\n" pid-str))
+        (insert-button "[Define Variable]" 'action
+                       (lambda (_ignored)
+                         (inf-iex--send
+                          (format inf-iex--define-variable-format pid-str pid-str))))
+        (insert "\n\n")
         (insert (inf-iex--trim-find-result state))
         (if (> (point-max) 8000)
             (text-mode)
