@@ -58,5 +58,10 @@ Will only work when we are in a project."
      (buffer-file-name (current-buffer))
      (cdr (project-current)))))
 
+(defun inf-iex--create-button (text face action)
+  (let ((b (insert-button text 'action action)))
+    (-> (make-overlay (button-start b) (button-end b))
+        (overlay-put 'face face))))
+
 (provide 'inf-iex-util)
 ;;; inf-iex-util.el ends here
