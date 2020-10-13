@@ -2,6 +2,7 @@
 
 (require 'subr-x)
 (require 'cl-lib)
+(require 'dash)
 
 (defun inf-iex--in-comment-p ()
   "Returns non-nil if inside comment, else nil.
@@ -103,10 +104,10 @@ Wrap with parenthese to support multiple lines.
     (concat (if respawn
                 "respawn\n"
               "")
-            (message "%s\n%s\n%s"
-                     (string-join aliases "\n")
-                     (string-join requires "\n")
-                     (string-join imports "\n")))))
+            (format "%s\n%s\n%s"
+                    (string-join aliases "\n")
+                    (string-join requires "\n")
+                    (string-join imports "\n")))))
 
 (provide 'inf-iex-parser)
 ;;; inf-iex-parser.el ends here

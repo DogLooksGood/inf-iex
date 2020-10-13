@@ -23,6 +23,7 @@
 ;;; Code:
 
 (require 'inf-iex-send)
+(require 'dash)
 
 (defface inf-iex--back-button
   '((((class color) (background dark))
@@ -83,8 +84,8 @@
   (format "Process.exit(:erlang.list_to_pid('%s'), :kill); \"#PID%s is killed!\"" pid-str pid-str))
 
 (defun inf-iex--make-exp-for-define-state-var (pid-str)
-  (format "%s = :sys.get_state(:erlang.list_to_pid('%s')); \"The state of #PID%s is defined as variable `state`.\""
-          inf-iex--state-variable-name pid-str pid-str))
+  (format "%s = :sys.get_state(:erlang.list_to_pid('%s')); \"The state of #PID%s is defined as variable `%s`.\""
+          inf-iex--state-variable-name pid-str pid-str inf-iex--state-variable-name))
 
 (defun inf-iex--query-state-execute (opt query)
   (let ((iex-buf (inf-iex--make-iex-buffer-name)))
@@ -96,7 +97,7 @@
                         (string-trim-left "#PID")))
              (_ (unless pid-str (error "Process is not exist or terminated!")))
              (state (inf-iex--send-string-async
-                     (message "%s" (inf-iex--make-exp-for-print-state pid-str)))))
+                     (format "%s" (inf-iex--make-exp-for-print-state pid-str)))))
         (with-current-buffer (get-buffer-create inf-iex--inspector-buffer-name)
           (setq buffer-read-only nil)
           (erase-buffer)
@@ -106,7 +107,6 @@
           (insert "\n")
           (inf-iex--create-button "[Define Variable]" 'inf-iex--define-var-button
                                   (lambda (_ignored)
-                                    (message "Define state as variable `%s'" inf-iex--state-variable-name)
                                     (inf-iex--send
                                      (inf-iex--make-exp-for-define-state-var pid-str))))
           (insert " ")
@@ -139,8 +139,9 @@
           (inf-iex-minor-mode)
           (goto-char (point-min))
           (setq buffer-read-only t))
-        (pop-to-buffer iex-buf)
-        (switch-to-buffer inf-iex--inspector-buffer-name)))))
+        (unless (equal (buffer-name) inf-iex--inspector-buffer-name)
+          (pop-to-buffer iex-buf)
+          (switch-to-buffer inf-iex--inspector-buffer-name))))))
 
 (defun inf-iex--query-items (query)
   (let* ((resp (-> (inf-iex--make-exp-for-query-process (cdr query))

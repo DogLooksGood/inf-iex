@@ -27,7 +27,7 @@
 
 (defun inf-iex--make-exp-for-inspect (term)
   "Return the code to inpect TERM."
-  (message "i %s" term))
+  (format "i %s" term))
 
 (defun inf-iex--make-exp-for-eval-with (binding code)
   (format "with %s do\n%s\nend" binding code))

@@ -28,6 +28,8 @@
 (require 'inf-iex-util)
 (require 'inf-iex-send)
 (require 'inf-iex-eval)
+(require 'dash)
+(require 'subr-x)
 
 (defface inf-iex-pry-face
   '((((class color) (background dark))

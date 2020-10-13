@@ -25,6 +25,8 @@
 ;;; Code:
 
 (require 'project)
+(require 'subr-x)
+(require 'dash)
 
 (defvar inf-iex--comint-prompt-regexp "\\(iex(.+)[0-9]*>\\)")
 
