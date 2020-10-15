@@ -1,9 +1,9 @@
 ;;; inf-iex.el --- Run IEx in Emacs                  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  tianshu
+;; Copyright (C) 2020  Shi Tianshu
 
-;; Author: Shi Tianshu
-;; Keywords: languages, tools
+;; Author: Shi Tianshu <doglooksgood@gmail.com>
+;; Keywords: tools, elixir
 ;; Package-Requires: ((emacs "27.0") (dash "2.12.0") (cl-lib "0.6.1") (emamux "0.14"))
 ;; Version: 0.0.1
 
@@ -21,6 +21,7 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+;; How to use:
 ;;
 ;; Enable `inf-iex-minor-mode' in `elixir-mode'
 ;;
@@ -29,7 +30,7 @@
 ;; Available Shortcuts:
 ;;
 ;; |--------------+--------------------------------------------------------|
-;; | Key Sequence | Functionality                                          |
+;; | Key Binding  | Functionality                                          |
 ;; |--------------+--------------------------------------------------------|
 ;; | C-c C-z      | Start IEx comint buffer.                               |
 ;; | C-c C-v      | Switch between sending target, tmux or comint buffer.  |
@@ -41,6 +42,8 @@
 ;; | C-c M-p p    | Add Pry section to above line.                         |
 ;; | C-c M-p k    | Remove Pry section in this file.                       |
 ;; | C-c M-p l    | Goto Pry section.                                      |
+;; | C-c C-s c    | Query process state from process list.                 |
+;; | C-c C-s s    | Query process state from Swarm registry.               |
 ;; | C-c C-i      | Send i {thing-at-point} to IEx.                        |
 ;; | C-c M-c      | Import this module and its imports & requires.         |
 ;; | C-c M-r      | Like ~C-c M-c~, but ~respawn~.                         |
@@ -103,6 +106,7 @@
   (setq-local comint-prompt-regexp inf-iex--comint-prompt-regexp))
 
 (defun inf-iex-start ()
+  "Start IEx session in Emacs."
   (interactive)
   (let ((inf-iex-buffer (inf-iex--make-iex-buffer-name)))
     (if (and inf-iex-buffer (comint-check-proc inf-iex-buffer))

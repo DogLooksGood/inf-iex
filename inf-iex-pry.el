@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2020  DESKTOP-E16H44U
 
-;; Author: DESKTOP-E16H44U <tianshu@DESKTOP-E16H44U>
+;; Author: DESKTOP-E16H44U <doglooksgood@gmail.com>
 ;; Keywords: tools, elixir, iex
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+;; Provide commands to quick insert/remove Pry statement.
 
-;;
 
 ;;; Code:
 
@@ -47,6 +47,7 @@
 Currently only one Pry statement per buffer is supported.")
 
 (defun inf-iex-set-pry ()
+  "Set pry state at above line."
   (interactive)
   (when inf-iex--pry-overlay
     (save-mark-and-excursion
@@ -59,7 +60,8 @@ Currently only one Pry statement per buffer is supported.")
 
     (indent-for-tab-command)
     (insert-button "require IEx;IEx.pry"
-                   'action #'inf-iex--click-pry-button)
+                   'action #'inf-iex--click-pry-button
+				   'follow-link t)
     (setq end (point)
           beg (- end (length "require IEx;IEx.pry")))
     (insert "\n")
@@ -70,12 +72,14 @@ Currently only one Pry statement per buffer is supported.")
     (inf-iex-reload)))
 
 (defun inf-iex-goto-pry ()
+  "Goto the pry state."
   (interactive)
   (if inf-iex--pry-overlay
       (goto-char (overlay-start inf-iex--pry-overlay))
     (message "No pry in this file.")))
 
 (defun inf-iex-unset-pry ()
+  "Unset pry statement in this buffer."
   (interactive)
   (goto-char (overlay-start inf-iex--pry-overlay))
   (delete-overlay inf-iex--pry-overlay)
@@ -85,6 +89,7 @@ Currently only one Pry statement per buffer is supported.")
   (inf-iex-reload))
 
 (defun inf-iex--click-pry-button (ignored)
+  "Action when click on pry button"
   (inf-iex-unset-pry))
 
 (provide 'inf-iex-pry)

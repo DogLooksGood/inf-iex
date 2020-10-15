@@ -1,4 +1,28 @@
-;;; -*- lexical-binding: t -*-
+;;; inf-iex-send.el --- inf-iex code buffer parser     -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2020  Shi Tianshu
+
+;; Author: Shi Tianshu <doglooksgood@gmail.com
+;; Keywords:
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Functions for parsing code buffer.
+
+;;; Code:
 
 (require 'subr-x)
 (require 'cl-lib)
@@ -11,6 +35,7 @@ Result depends on syntax table's comment character."
   (nth 4 (syntax-ppss)))
 
 (defun inf-iex--exp-end-p ()
+  "If we are at the end of expression."
   (and (zerop (car (syntax-ppss)))
        (save-mark-and-excursion
          (while (eq (char-before) 32)
@@ -18,6 +43,7 @@ Result depends on syntax table's comment character."
          (not (looking-back "[,:]" 10)))))
 
 (defun inf-iex--bound-of-current-exp ()
+  "Return the bounds of current expression."
   (let ((beg (save-mark-and-excursion (back-to-indentation) (point)))
         end)
     (save-mark-and-excursion
@@ -29,13 +55,16 @@ Result depends on syntax table's comment character."
     (cons beg end)))
 
 (defun inf-iex--remove-text-properties (text)
+  "Remove properties for TEXT."
   (set-text-properties 0 (length text) nil text)
   text)
 
 (defun inf-iex--replace-module-constant (mod code)
+  "Replace __MODULE__ with current module name."
   (replace-regexp-in-string "__MODULE__" mod code t t))
 
 (defun inf-iex--parse-alias (mod &optional buf)
+  "Extract alias in BUF, consider module name is MOD."
   (let ((buf (or buf (current-buffer)))
         (result ())
         (case-fold-search nil))
@@ -51,6 +80,7 @@ Result depends on syntax table's comment character."
     result))
 
 (defun inf-iex--parse-import (mod &optional buf)
+  "Extract imports in BUF, consider module name is MOD."
   (let ((buf (or buf (current-buffer)))
         (result ())
         (case-fold-search nil))
@@ -66,6 +96,7 @@ Result depends on syntax table's comment character."
     result))
 
 (defun inf-iex--parse-requires (mod &optional buf)
+  "Extract requires in BUF, consider module name is MOD."
   (let ((buf (or buf (current-buffer)))
         (result ())
         (case-fold-search nil))
@@ -81,7 +112,7 @@ Result depends on syntax table's comment character."
     result))
 
 (defun inf-iex--format-eval-code (code)
-  "Format the code for sending to IEx.
+  "Format the CODE for sending to IEx.
 
 Remove # and iex> for those code in comment.
 Wrap with parenthese to support multiple lines.
@@ -96,7 +127,12 @@ Wrap with parenthese to support multiple lines.
          (format "(%s)"))))
 
 (defun inf-iex--make-setup-code (mod respawn &optional buf)
-  "Make the setup code for BUF or current buffer."
+  "Make the setup code for BUF or current buffer.
+
+Arguments:
+MOD - current module name.
+RESPAWN - If we should respawn a new session.
+"
   (let* ((imports (inf-iex--parse-import mod buf))
          (imports (if mod (cons (format "import %s" mod) imports) imports))
          (aliases (inf-iex--parse-alias mod buf))

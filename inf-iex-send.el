@@ -1,8 +1,8 @@
 ;;; inf-iex-send.el --- send code to IEx session     -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  tianshu
+;; Copyright (C) 2020  Shi Tianshu
 
-;; Author: tianshu <tianshu@tianshu-manjaro>
+;; Author: Shi Tianshu <doglooksgood@gmail.com
 ;; Keywords:
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;;
+;; Provide functions to send code to IEx.
 
 ;;; Code:
 
@@ -35,7 +35,8 @@
   'process
   "Can be `process' or `tmux'.")
 
-(defvar inf-iex--shell-output-filter-in-progress nil)
+(defvar inf-iex--shell-output-filter-in-progress nil
+  "Non-nil means we are filtering output.")
 
 (defun inf-iex--shell-end-of-output? (string)
   "Return non-nil if STRING ends with the prompt."
@@ -84,6 +85,7 @@
       (ansi-color-apply (buffer-string)))))
 
 (defun inf-iex-toggle-send-target ()
+  "Toggle sending target, between `process' and `tmux'."
   (interactive)
   (message "Set inf-iex send target to %s"
            (if (eq 'process inf-iex-send-target)
@@ -91,6 +93,7 @@
              (setq inf-iex-send-target 'process))))
 
 (defun inf-iex--tmux-send (input)
+  "Send code to iex in tmux."
   (interactive)
   (emamux:check-tmux-running)
   (condition-case nil
@@ -104,6 +107,7 @@
     (quit (emamux:unset-parameters))))
 
 (defun inf-iex--send (string)
+  "Send code to iex in process."
   (ignore-errors
     (cond
      ((eq 'process inf-iex-send-target)
