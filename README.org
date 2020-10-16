@@ -12,7 +12,7 @@ Following is the installation with [[https://github.com/jwiegley/use-package][us
 #+begin_src emacs-lisp
   (use-package inf-iex
     :hook (elixir-mode . inf-iex-minor-mode)
-    :quelpa (rime :fetcher github
+    :quelpa (inf-iex :fetcher github
                   :repo "DogLooksGood/inf-iex"))
 #+end_src
 
@@ -21,7 +21,7 @@ Following is the installation with [[https://github.com/jwiegley/use-package][us
 #+begin_src emacs-lisp
   (use-package inf-iex
     :hook (elixir-mode . inf-iex-minor-mode)
-    :straight (rime :type git
+    :straight (inf-iex :type git
                     :host github
                     :repo "DogLooksGood/inf-iex"))
 #+end_src
