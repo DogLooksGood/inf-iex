@@ -118,5 +118,9 @@ Click ~RET~ it remove.
 
 ~C-c C-i~ can be used to inspect values when working with Pry.
 
+* FAQ
+  
+Question: How to solve error "file-remote-p: Wrong type argument: stringp, nil" when starting IEx comint buffer?
 
+Answer: INF IEX will call ~(project-current)~ in Emacs which will read git info in current path. Please make sure that you have done ~git init~ for the Elixir project.
 
