@@ -31,35 +31,38 @@ There're two ways to play.
 
 ** Start IEx in Emacs comint buffer.
 
-Inf-IEx contains a very basic support for IEx session with comint. At this moment, 
+Inf-IEx contains a very basic support for IEx session with comint. At this moment,
 it doesn't have a nicer code completion or navigation. But it allows us to eval code in code buffer.
 
 ** Start IEx in a tmux window.
 
 A nice package, [[https://github.com/emacsorphanage/emamux][emamux]], help us to interact with tmux sessions, and it is be used by Inf-IEx.
-By using a native IEx session in shell, we have code completion, and it also gives us the ability to 
+By using a native IEx session in shell, we have code completion, and it also gives us the ability to
 to connect through a SSH connection(running SSH session in a local tmux).
 
 * Summary of shortcuts
 
- |--------------+--------------------------------------------------------|
- | Key Binding  | Functionality                                          |
- |--------------+--------------------------------------------------------|
- | ~C-c C-z~    | Start IEx comint buffer.                               |
- | ~C-c C-v~    | Switch between sending target, tmux or comint buffer.  |
- | ~C-c C-c~    | Send region or current line to target.                 |
- | ~C-c C-n~    | Eval and wrap code with :timer.tc, return nanoseconds. |
- | ~C-c C-w~    | Eval with bindings those read from minibuffer.         |
- | ~C-c C-k~    | Reload current module.                                 |
- | ~C-c C-l~    | Compile current file.                                  |
- | ~C-c M-p p~  | Add Pry section to above line.                         |
- | ~C-c M-p k~  | Remove Pry section in this file.                       |
- | ~C-c M-p l~  | Goto Pry section.                                      |
- | ~C-c C-s c~  | Query process state from process list.                 |
- | ~C-c C-s s~  | Query process state from Swarm registry.               |
- | ~C-c C-i~    | Send i {thing-at-point} to IEx.                        |
- | ~C-c M-c~    | Import this module and its imports & requires.         |
- | ~C-c M-r~    | Like ~C-c M-c~, but ~respawn~.                         |
+ |-------------+--------------------------------------------------------|
+ | Key Binding | Functionality                                          |
+ |-------------+--------------------------------------------------------|
+ | ~C-c C-z~   | Start IEx comint buffer.                               |
+ | ~C-c C-v~   | Switch between sending target, tmux or comint buffer.  |
+ | ~C-c C-c~   | Send region or current line to target.                 |
+ | ~C-c C-n~   | Eval and wrap code with :timer.tc, return nanoseconds. |
+ | ~C-c C-w~   | Eval with bindings those read from minibuffer.         |
+ | ~C-c C-k~   | Reload current module.                                 |
+ | ~C-c C-l~   | Compile current file.                                  |
+ | ~C-c M-p p~ | Add Pry section to above line.                         |
+ | ~C-c M-p k~ | Remove Pry section in this file.                       |
+ | ~C-c M-p l~ | Goto Pry section.                                      |
+ | ~C-c C-s c~ | Query process state from process list.                 |
+ | ~C-c C-s s~ | Query process state from Swarm registry.               |
+ | ~C-c C-i~   | Send i {thing-at-point} to IEx.                        |
+ | ~C-c M-c~   | Import this module and its imports & requires.         |
+ | ~C-c M-r~   | Like ~C-c M-c~, but ~respawn~.                         |
+ | ~c-c M-d b~ | Open DBG list buffer.                                  |
+ | ~C-c M-d d~ | Add current function to DBG list.                      |
+ | ~C-c M-d c~ | DBG execute expression.                                |
 
 * Start comint IEx session
 
@@ -118,9 +121,20 @@ Click ~RET~ it remove.
 
 ~C-c C-i~ can be used to inspect values when working with Pry.
 
+* DBG
+
+/**this feature only works with IEx in Emacs/
+
+Use ~c-c M-d d~ to add current function to DBG list.
+
+Use ~C-c M-d b~ to open DBG List buffer, in this buffer, use ~n~/~p~ to navigate, ~k~ to remove, ~t~ to toggle.
+
+Use ~C-c M-d c~ to execute expression with DBG.
+
+Tracing result and output will be displayed in a new buffer.
+
 * FAQ
-  
+
 Question: How to solve error "file-remote-p: Wrong type argument: stringp, nil" when starting IEx comint buffer?
 
 Answer: INF IEX will call ~(project-current)~ in Emacs which will read git info in current path. Please make sure that you have done ~git init~ for the Elixir project.
-
