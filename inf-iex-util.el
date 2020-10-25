@@ -31,15 +31,21 @@
 (defvar inf-iex--comint-prompt-regexp "\\(iex(.+)[0-9]*>\\)")
 
 (defun inf-iex--make-iex-buffer-name ()
-  (format "IEx[%s]" (cdr (project-current))))
+  (format "*IEx[%s]*" (inf-iex--project-root)))
 
 (defun inf-iex--get-process ()
   (get-process (inf-iex--make-iex-buffer-name)))
 
+(defun inf-iex--project-root ()
+  "Find current project root."
+  (if-let ((proj (project-current)))
+      (cdr proj)
+    (error "Project is not under version control, try run \"git init\" in project root.")))
+
 (defun inf-iex--relative-module-name ()
   (save-mark-and-excursion
     (re-search-backward
-     "defmodule \\([[:graph:]]+\\)"
+     "\\(?:defmodule\\|defprotocol\\) \\([[:graph:]]+\\)"
      nil t 1)
     (match-string 1)))
 
@@ -47,15 +53,21 @@
   (save-mark-and-excursion
     (goto-char (point-min))
     (re-search-forward
-     "defmodule \\([[:graph:]]+\\)")
+     "\\(?:defmodule\\|defprotocol\\) \\([[:graph:]]+\\)")
     (match-string 1)))
+
+(defun inf-iex--get-code-to-eval ()
+  (-let (((beg . end) (if (region-active-p)
+                          (car (region-bounds))
+                        (cons (line-beginning-position) (line-end-position)))))
+    (buffer-substring-no-properties beg end)))
 
 (defun inf-iex--proj-file-name ()
   "Return relative file name of current buffer in current project.
 
 Will only work when we are in a project."
   (when (and (buffer-file-name (current-buffer))
-             (project-current))
+             (inf-iex--project-root))
     (file-relative-name
      (buffer-file-name (current-buffer))
      (cdr (project-current)))))

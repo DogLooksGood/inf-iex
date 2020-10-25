@@ -4,7 +4,7 @@
 
 ;; Author: Shi Tianshu
 ;; Keywords: languages, tools
-;; Package-Requires: ((emacs "27.0") (dash "2.12.0") (cl-lib "0.6.1") (emamux "0.14"))
+;; Package-Requires: ((emacs "27.0") (dash "2.12.0") (cl-lib "0.6.1") (emamux "0.14") (project "0.5.2"))
 ;; Version: 0.0.1
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -60,6 +60,7 @@
 (require 'inf-iex-send)
 (require 'inf-iex-observer)
 (require 'inf-iex-pry)
+(require 'inf-iex-dbg)
 
 (defvar inf-iex-minor-mode-map
   (let ((keymap (make-sparse-keymap)))
@@ -72,6 +73,9 @@
     (define-key keymap (kbd "C-c C-k") 'inf-iex-reload)
     (define-key keymap (kbd "C-c C-l") 'inf-iex-compile)
     (define-key keymap (kbd "C-c C-z") 'inf-iex-start)
+    (define-key keymap (kbd "C-c M-d d") 'inf-iex-dbg-add-tp)
+    (define-key keymap (kbd "C-c M-d b") 'inf-iex-dbg-list)
+    (define-key keymap (kbd "C-c M-d c") 'inf-iex-dbg-eval)
     (define-key keymap (kbd "C-c M-p p") 'inf-iex-set-pry)
     (define-key keymap (kbd "C-c M-p k") 'inf-iex-unset-pry)
     (define-key keymap (kbd "C-c M-p l") 'inf-iex-goto-pry)
@@ -106,8 +110,8 @@
   (interactive)
   (let ((inf-iex-buffer (inf-iex--make-iex-buffer-name)))
     (if (and inf-iex-buffer (comint-check-proc inf-iex-buffer))
-        (pop-to-buffer inf-iex-buffer)
-      (let* ((proj-root (cdr (project-current)))
+        (pop-to-buffer inf-iex-buffer t)
+      (let* ((proj-root (inf-iex--project-root))
              (name (inf-iex--make-iex-buffer-name))
              (cmd (split-string (read-from-minibuffer "Command to start IEx session: " "iex -S mix")))
              (env (read-from-minibuffer "Environment: " "dev"))
