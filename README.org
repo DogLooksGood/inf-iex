@@ -1,8 +1,5 @@
-#+TITLE: INF IEX
-
 * INF IEX
-To provide a better interaction experientce beteew emacs elixir buffer and IEx sessions.
-And this package is not exquisite yet, but it will be.
+To provide a better interaction experience between emacs elixir buffer and IEx sessions.
 
 THIS PACKAGE IS WORKING IN PROGRESS.
 
@@ -15,7 +12,7 @@ Following is the installation with [[https://github.com/jwiegley/use-package][us
 #+begin_src emacs-lisp
   (use-package inf-iex
     :hook (elixir-mode . inf-iex-minor-mode)
-    :quelpa (rime :fetcher github
+    :quelpa (inf-iex :fetcher github
                   :repo "DogLooksGood/inf-iex"))
 #+end_src
 
@@ -24,7 +21,7 @@ Following is the installation with [[https://github.com/jwiegley/use-package][us
 #+begin_src emacs-lisp
   (use-package inf-iex
     :hook (elixir-mode . inf-iex-minor-mode)
-    :straight (rime :type git
+    :straight (inf-iex :type git
                     :host github
                     :repo "DogLooksGood/inf-iex"))
 #+end_src
@@ -45,22 +42,24 @@ to connect through a SSH connection(running SSH session in a local tmux).
 
 * Summary of shortcuts
 
-|--------------+--------------------------------------------------------|
-| Key Sequence | Functionality                                          |
-|--------------+--------------------------------------------------------|
-| C-c C-z      | Start IEx comint buffer.                               |
-| C-c C-v      | Switch between sending target, tmux or comint buffer.  |
-| C-c C-c      | Send region or current line to target.                 |
-| C-c C-n      | Eval and wrap code with :timer.tc, return nanoseconds. |
-| C-c C-w      | Eval with bindings those read from minibuffer.         |
-| C-c C-k      | Reload current module.                                 |
-| C-c C-l      | Compile current file.                                  |
-| C-c M-p p    | Add Pry section to above line.                         |
-| C-c M-p k    | Remove Pry section in this file.                       |
-| C-c M-p l    | Goto Pry section.                                      |
-| C-c C-i      | Send i {thing-at-point} to IEx.                        |
-| C-c M-c      | Import this module and its imports & requires.         |
-| C-c M-r      | Like ~C-c M-c~, but ~respawn~.                             |
+ |--------------+--------------------------------------------------------|
+ | Key Binding  | Functionality                                          |
+ |--------------+--------------------------------------------------------|
+ | ~C-c C-z~    | Start IEx comint buffer.                               |
+ | ~C-c C-v~    | Switch between sending target, tmux or comint buffer.  |
+ | ~C-c C-c~    | Send region or current line to target.                 |
+ | ~C-c C-n~    | Eval and wrap code with :timer.tc, return nanoseconds. |
+ | ~C-c C-w~    | Eval with bindings those read from minibuffer.         |
+ | ~C-c C-k~    | Reload current module.                                 |
+ | ~C-c C-l~    | Compile current file.                                  |
+ | ~C-c M-p p~  | Add Pry section to above line.                         |
+ | ~C-c M-p k~  | Remove Pry section in this file.                       |
+ | ~C-c M-p l~  | Goto Pry section.                                      |
+ | ~C-c C-s c~  | Query process state from process list.                 |
+ | ~C-c C-s s~  | Query process state from Swarm registry.               |
+ | ~C-c C-i~    | Send i {thing-at-point} to IEx.                        |
+ | ~C-c M-c~    | Import this module and its imports & requires.         |
+ | ~C-c M-r~    | Like ~C-c M-c~, but ~respawn~.                         |
 
 * Start comint IEx session
 
@@ -80,7 +79,7 @@ To measure execution cost, use ~C-c C-n~, nanoseconds will be returned.
 
 To Evaluate with bindings, use ~C-c C-w~.
 
-NOTE: You may want to put playground code in comment, prefix ~#~ will be trimed.
+NOTE: You may want to put playground code in comment, prefix ~#~ and ~iex>~ will be trimed.
 
 * Switch sending target
 
@@ -88,17 +87,40 @@ Use ~C-c C-v~ to switch target between tmux and comint buffer.
 
 * Reload module
 
-Use ~C-c C-k.~
+Use ~C-c C-k~.
 
 * Compile module
 
-Use ~C-c C-l~.
+Use ~C-c C-l~
+
+* Process state query
+
+/**this feature only works with IEx in Emacs/
+
+We can query process state by pick a process name from a list.
+
+Currently, only following registry is supported.
+
+- ~C-c C-s c~ For those have a ~:registered_name~, listing by ~Process.list~.
+- ~C-c C-s s~ For those registered with Swarm.
+
+After pick the process in minibuffer, a inspector will display its state.
+
+And you can use buttons on top to define state as variable or kill this process.
+
+I'm new to Elixir, so if you want a type of registry to be supported, just submit an issue!
 
 * Pry
 
-Insert a pry at above line with ~C-c M-p p~. Press ~RET~ on that pry button to remove it.
+Insert a pry at above line with ~C-c M-p p~. After insertion, module will be reloaded automatically.
+
+Click ~RET~ it remove.
 
 ~C-c C-i~ can be used to inspect values when working with Pry.
 
+* FAQ
+  
+Question: How to solve error "file-remote-p: Wrong type argument: stringp, nil" when starting IEx comint buffer?
 
+Answer: INF IEX will call ~(project-current)~ in Emacs which will read git info in current path. Please make sure that you have done ~git init~ for the Elixir project.
 

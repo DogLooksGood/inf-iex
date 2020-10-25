@@ -1,8 +1,8 @@
 ;;; inf-iex-util.el --- Utilities for inf-iex        -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  tianshu
+;; Copyright (C) 2020  Shi Tianshu
 
-;; Author: tianshu <tianshu@tianshu-manjaro>
+;; Author: Shi Tianshu <doglooksgood@gmail.com
 ;; Keywords: tools, elixir, iex
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;;
+;; Utilities.
 
 ;;; Code:
 
@@ -28,12 +28,14 @@
 (require 'subr-x)
 (require 'dash)
 
-(defvar inf-iex--comint-prompt-regexp "\\(iex(.+)[0-9]*>\\)")
+(defvar inf-iex--comint-prompt-regexp "\\(iex(.+)[0-9]*>\\)"
+  "The regular expression we use to detect iex prompt in output.")
 
 (defun inf-iex--make-iex-buffer-name ()
   (format "*IEx[%s]*" (inf-iex--project-root)))
 
 (defun inf-iex--get-process ()
+  "Get current IEx comint process."
   (get-process (inf-iex--make-iex-buffer-name)))
 
 (defun inf-iex--project-root ()
@@ -43,6 +45,7 @@
     (error "Project is not under version control, try run \"git init\" in project root.")))
 
 (defun inf-iex--relative-module-name ()
+  "Backward search for the module name from current point."
   (save-mark-and-excursion
     (re-search-backward
      "\\(?:defmodule\\|defprotocol\\) \\([[:graph:]]+\\)"
@@ -50,6 +53,7 @@
     (match-string 1)))
 
 (defun inf-iex--module-name ()
+  "Forward search for the module name from current point."
   (save-mark-and-excursion
     (goto-char (point-min))
     (re-search-forward
@@ -73,6 +77,7 @@ Will only work when we are in a project."
      (cdr (project-current)))))
 
 (defun inf-iex--create-button (text face action)
+  "Create a button with TEXT, FACE and ACTION."
   (let ((b (insert-button text
                           'action action
                           'follow-link t)))

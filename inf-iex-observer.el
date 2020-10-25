@@ -1,8 +1,8 @@
 ;;; inf-iex-observer.el --- Observer in Emacs        -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  tianshu
+;; Copyright (C) 2020  Shi Tianshu
 
-;; Author: tianshu <tianshu@tianshu-manjaro>
+;; Author: Shi Tianshu <doglooksgood@gmail.com>
 ;; Keywords: tools, elixir
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
+
+;; Process states inspector.
 
 ;;; Code:
 
@@ -57,7 +59,8 @@
   "The button face for kill process in inspector."
   :group 'inf-iex)
 
-(defvar inf-iex--inspector-buffer-name "*INF IEx Value Inspector*")
+(defvar inf-iex--inspector-buffer-name "*INF IEx Value Inspector*"
+  "Buffer name for inspector view.")
 
 (defvar inf-iex--state-variable-name "state"
   "The default variable name when you define state as a variable.")
@@ -66,28 +69,40 @@
   "The limit buffer size for applying font-lock on inspect buffer.")
 
 (defvar inf-iex--common-query
-  '("Process Information" .  "Process.list|>Stream.map(&({Keyword.get(Process.info(&1), :registered_name), &1}))|>Enum.filter(&elem(&1, 0))"))
+  '("Process Information" .  "Process.list|>Stream.map(&({Keyword.get(Process.info(&1), :registered_name), &1}))|>Enum.filter(&elem(&1, 0))")
+  "Default query for get pid list with Process.list.")
 
 (defvar inf-iex--swarm-query
-  '("Swarm" . "Swarm.registered()"))
+  '("Swarm" . "Swarm.registered()")
+  "Query for get pid list with Swarm.")
 
 (defun inf-iex--trim-find-result (s)
+  "Trim useless output from iex output S."
   (string-trim-right s ":ok[\n ]+\\(?:nil[\n ]+\\)?\\(?:iex.+>[\n ]+\\)?"))
 
 (defun inf-iex--make-exp-for-query-process (query-exp)
+  "Make statement for query with QUERY-EXP."
   (concat query-exp "|>Enum.each(fn {n, pid} -> IO.puts \"#{inspect n}\t#{inspect pid}\" end)"))
 
 (defun inf-iex--make-exp-for-print-state (pid-str)
+  "Make statement for print state with PID-STR."
   (format "IO.puts inspect(:sys.get_state(:erlang.list_to_pid('%s')), pretty: true, limit: :infinity)\n" pid-str))
 
 (defun inf-iex--make-exp-for-kill-process (pid-str)
+  "Make statement for kill process with PID-STR."
   (format "Process.exit(:erlang.list_to_pid('%s'), :kill); \"#PID%s is killed!\"" pid-str pid-str))
 
 (defun inf-iex--make-exp-for-define-state-var (pid-str)
+  "Make statement for define state variable with PID-STR."
   (format "%s = :sys.get_state(:erlang.list_to_pid('%s')); \"The state of #PID%s is defined as variable `%s`.\""
           inf-iex--state-variable-name pid-str pid-str inf-iex--state-variable-name))
 
 (defun inf-iex--query-state-execute (opt query)
+  "Execute state query.
+
+Arguments:
+OPT - The user's selection from process list, considered as the name of process.
+QUERY - A list like `inf-iex--common-query'."
   (let ((iex-buf (inf-iex--make-iex-buffer-name)))
     (if (not iex-buf)
         (message "IEx session not available for this project!")
@@ -144,6 +159,7 @@
           (switch-to-buffer inf-iex--inspector-buffer-name))))))
 
 (defun inf-iex--query-items (query)
+  "List items from QUERY."
   (let* ((resp (-> (inf-iex--make-exp-for-query-process (cdr query))
                    (inf-iex--send-string-async )
                    (inf-iex--trim-find-result)))
@@ -153,10 +169,12 @@
                  lines))))
 
 (defun inf-iex--pick-item (items)
+  "Ask user to pick an item from ITEMS."
   (let ((names (mapcar #'car items)))
     (completing-read "Query:" names nil t)))
 
 (defun inf-iex-query-state-common (&optional query)
+  "Query state with QUERY or `inf-iex--common-query'."
   (interactive)
   (if (eq inf-iex-send-target 'tmux)
       (message "Query state is not available for tmux target!")
@@ -166,6 +184,7 @@
       (inf-iex--query-state-execute opt query))))
 
 (defun inf-iex-query-state-swarm ()
+  "Query state from Swarm registry."
   (interactive)
   (inf-iex-query-state-common inf-iex--swarm-query))
 
