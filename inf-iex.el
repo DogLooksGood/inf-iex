@@ -79,6 +79,7 @@
     (define-key keymap (kbd "C-c M-d d") 'inf-iex-dbg-add-tp)
     (define-key keymap (kbd "C-c M-d b") 'inf-iex-dbg-list)
     (define-key keymap (kbd "C-c M-d c") 'inf-iex-dbg-eval)
+    (define-key keymap (kbd "C-c M-d w") 'inf-iex-dbg-eval-with-binding)
     (define-key keymap (kbd "C-c M-p p") 'inf-iex-set-pry)
     (define-key keymap (kbd "C-c M-p k") 'inf-iex-unset-pry)
     (define-key keymap (kbd "C-c M-p l") 'inf-iex-goto-pry)

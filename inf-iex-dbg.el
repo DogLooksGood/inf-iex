@@ -26,6 +26,7 @@
 
 (require 'inf-iex-util)
 (require 'inf-iex-send)
+(require 'inf-iex-parser)
 
 (defvar-local inf-iex--dbg-current-project nil
   "Current project path, used in dbg list buffer.")
@@ -154,7 +155,7 @@
         (let* ((args-list (match-string 4 ln))
                (args (substring args-list 1 (1- (length args-list))))
                (unhandled (or (match-string 5 ln) ""))
-               (s (format "#%s Call:\n  %s.%s(%s%s)"
+               (s (format "#%s Call:\n%s.%s(%s%s)"
                           (->> (-cycle '(" ▶"))
                                (-take inf-iex--format-indent-level)
                                (string-join))
@@ -164,7 +165,7 @@
       ;; return_from
       (let* ((arity (match-string 4 ln))
              (ret (match-string 5 ln))
-             (s (format "#%s %s.%s/%s:\n  %s"
+             (s (format "#%s %s.%s/%s:\n%s"
                         (->> (-cycle '(" ◀"))
                              (-take (cl-decf inf-iex--format-indent-level))
                              (string-join))
@@ -194,6 +195,24 @@
       (goto-char (point-min)))
     (pop-to-buffer buf t)))
 
+(defun inf-iex--eval-with-dbg (code dbg-list-buf)
+  (with-current-buffer dbg-list-buf
+    (let* ((tp-exps (-> (--keep (inf-iex--item-to-tp-exp it)
+                                inf-iex--dbg-tp-list)
+                        (string-join ";")))
+           (_ (when (string-blank-p tp-exps)
+                (error "DBG List is empty!")))
+           (exp (format "try do :dbg.start();:dbg.tracer(:process, {fn msg, _ ->
+IO.puts(case msg do
+ {_, _, :call, fma} -> \"\\n__DBG_OUTPUT__:call#{inspect fma, charlists: :as_lists}\"
+ {_, _, :return_from, fma, ret} -> \"\\n__DBG_OUTPUT__:return_from#{inspect fma}#{inspect ret, limit: :infinity, charlists: :as_lists}\"
+ end)
+end, 0});%s;:dbg.p(:all, :c);%s after :dbg.stop_clear() end"
+                        tp-exps
+                        code)))
+      (inf-iex--dbg-create-output-buffer
+       (inf-iex--send-string-async exp)))))
+
 (defun inf-iex-dbg-eval ()
   (interactive)
   (unless (equal inf-iex-send-target 'process)
@@ -202,22 +221,19 @@
          (code (inf-iex--format-eval-code raw))
          (proj (inf-iex--project-root))
          (buf (inf-iex--make-dbg-list-buffer-name proj)))
-    (with-current-buffer buf
-      (let* ((tp-exps (-> (--keep (inf-iex--item-to-tp-exp it)
-                                 inf-iex--dbg-tp-list)
-                          (string-join ";")))
-             (_ (when (string-blank-p tp-exps)
-                  (error "DBG List is empty!")))
-             (exp (format "try do :dbg.start();:dbg.tracer(:process, {fn msg, _ ->
-IO.puts(case msg do
- {_, _, :call, fma} -> \"\\n__DBG_OUTPUT__:call#{inspect fma, charlists: :as_lists}\"
- {_, _, :return_from, fma, ret} -> \"\\n__DBG_OUTPUT__:return_from#{inspect fma}#{inspect ret, limit: :infinity, charlists: :as_lists}\"
- end)
-end, 0});%s;:dbg.p(:all, :c);%s after :dbg.stop_clear() end"
-                          tp-exps
-                          code)))
-        (inf-iex--dbg-create-output-buffer
-         (inf-iex--send-string-async exp))))))
+    (inf-iex--eval-with-dbg code buf)))
+
+(defun inf-iex-dbg-eval-with-binding ()
+  "Send code with binding that read from minibuffer prompt."
+  (interactive)
+  (unless (equal inf-iex-send-target 'process)
+    (error "DBG eval is only supported for send target `process'."))
+  (-let* ((raw (inf-iex--get-code-to-eval))
+          (code (inf-iex--format-eval-code raw))
+          (binding (read-from-minibuffer "Eval with: " ""))
+          (proj (inf-iex--project-root))
+          (buf (inf-iex--make-dbg-list-buffer-name proj)))
+    (inf-iex--eval-with-dbg (inf-iex--make-exp-for-eval-with binding code) buf)))
 
 
 (provide 'inf-iex-dbg)
