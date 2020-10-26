@@ -172,7 +172,8 @@
         s))))
 
 (defun inf-iex--dbg-create-output-buffer (output-string)
-  (-let* ((lines (split-string output-string "\n"))
+  (-let* ((output-string (replace-regexp-in-string "\\.\\.\\..+?> *" "" output-string))
+          (lines (split-string output-string "\n"))
           (grouped-lines (--group-by (string-prefix-p "__DBG_OUTPUT__" it) lines))
           (dbg-lines (alist-get t grouped-lines))
           (io-lines (alist-get nil grouped-lines))
@@ -186,7 +187,7 @@
                  (insert (inf-iex--format-dbg-line ln) "\n")))
       (insert "\n# OUTPUT:\n")
       (cl-loop for ln in io-lines do
-               (unless (string-match-p "\\(?:\\.\\.\\..+> \\)+" ln)
+               (unless (string-empty-p ln)
                  (insert ln "\n")))
       (elixir-mode)
       (setq buffer-read-only t)
@@ -209,8 +210,8 @@
                   (error "DBG List is empty!")))
              (exp (format "try do :dbg.start();:dbg.tracer(:process, {fn msg, _ ->
 IO.puts(case msg do
- {_, _, :call, fma} -> \"__DBG_OUTPUT__:call#{inspect fma, charlists: :as_lists}\"
- {_, _, :return_from, fma, ret} -> \"__DBG_OUTPUT__:return_from#{inspect fma}#{inspect ret, limit: :infinity, charlists: :as_lists}\"
+ {_, _, :call, fma} -> \"\\n__DBG_OUTPUT__:call#{inspect fma, charlists: :as_lists}\"
+ {_, _, :return_from, fma, ret} -> \"\\n__DBG_OUTPUT__:return_from#{inspect fma}#{inspect ret, limit: :infinity, charlists: :as_lists}\"
  end)
 end, 0});%s;:dbg.p(:all, :c);%s after :dbg.stop_clear() end"
                           tp-exps
