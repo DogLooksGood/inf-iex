@@ -84,12 +84,14 @@ Will also do `inf-iex-setup-context' for current module."
           (code-to-eval (inf-iex--format-eval-code raw)))
     (inf-iex--send code-to-eval)))
 
+(defvar inf-iex-eval-with-binding-history nil)
+
 (defun inf-iex-eval-with-binding ()
   "Send code with binding that read from minibuffer prompt."
   (interactive)
   (-let* ((raw (inf-iex--get-code-to-eval))
           (code (inf-iex--format-eval-code raw))
-          (binding (read-from-minibuffer "Eval with: " "")))
+          (binding (read-from-minibuffer "Eval with: " "" nil nil inf-iex-eval-with-binding-history)))
     (inf-iex--send (inf-iex--make-exp-for-eval-with binding code))))
 
 (defun inf-iex-eval-measure-time ()

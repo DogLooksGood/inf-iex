@@ -64,6 +64,7 @@
 (require 'inf-iex-observer)
 (require 'inf-iex-pry)
 (require 'inf-iex-dbg)
+(require 'inf-iex-tracer)
 
 (defvar inf-iex-minor-mode-map
   (let ((keymap (make-sparse-keymap)))
@@ -86,6 +87,7 @@
     (define-key keymap (kbd "C-c C-i") 'inf-iex-i)
     (define-key keymap (kbd "C-c M-c") 'inf-iex-setup-context)
     (define-key keymap (kbd "C-c M-r") 'inf-iex-respawn-context)
+    (define-key keymap (kbd "C-c M-t") 'inf-iex-tracer)
     keymap)
   "Keymap for interaction with IEx buffer.")
 
@@ -99,16 +101,17 @@
 (define-minor-mode inf-iex-minor-mode
   "Minor mode for Interaction with IEx."
   nil
-  "inf-IEx"
+  "INF-IEx"
   inf-iex-minor-mode-map)
 
-(define-derived-mode inf-iex-mode comint-mode "inf-IEx"
+(define-derived-mode inf-iex-mode comint-mode
+  "INF-IEx"
   "Major mode for IEx session buffer."
   nil
   "IEx"
   inf-iex-mode-map
   (setq-local comint-prompt-read-only t)
-  (setq-local comint-prompt-regexp inf-iex--comint-prompt-regexp))
+  (setq-local comint-prompt-regexp "^iex([^ ]+)[0-9]*>"))
 
 (defun inf-iex-start ()
   "Start IEx session in Emacs."

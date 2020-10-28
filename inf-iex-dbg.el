@@ -133,7 +133,7 @@
 (defvar inf-iex-dbg-list-mode-hook nil)
 
 (define-derived-mode inf-iex-dbg-list-mode
-  special-mode " DBG List"
+  special-mode " inf-IEx DBG List"
   "Major mode for display DBG list in inf-iex."
   (inf-iex--dbg-list-mode-init))
 

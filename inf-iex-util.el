@@ -28,9 +28,6 @@
 (require 'subr-x)
 (require 'dash)
 
-(defvar inf-iex--comint-prompt-regexp "\\(iex(.+)[0-9]*>\\)"
-  "The regular expression we use to detect iex prompt in output.")
-
 (defun inf-iex--make-iex-buffer-name ()
   (format "*IEx[%s]*" (inf-iex--project-root)))
 
