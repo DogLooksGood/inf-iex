@@ -35,13 +35,13 @@
   'process
   "Can be `process' or `tmux'.")
 
-(defun inf-iex--send-string-async (string &optional prompt)
+(defun inf-iex--send-string-async (string)
   "Send STRING to internal hy process asynchronously."
   (let ((output-buffer " *Comint Inf IEx Redirect Work Buffer*")
         (proc (inf-iex--get-process)))
     (with-current-buffer (get-buffer-create output-buffer)
       (erase-buffer)
-      (comint-redirect-send-command-to-process string output-buffer proc t t)
+      (comint-redirect-send-command-to-process string output-buffer proc nil t)
 
       (set-buffer (process-buffer proc))
       (while (and (null comint-redirect-completed)

@@ -122,8 +122,10 @@
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "n") 'forward-line)
     (define-key keymap (kbd "p") 'previous-line)
-    (define-key keymap (kbd "k") 'inf-iex-dbg-remove-tp)
-    (define-key keymap (kbd "t") 'inf-iex-dbg-toggle-tp)
+    (define-key keymap (kbd "j") 'forward-line)
+    (define-key keymap (kbd "k") 'previous-line)
+    (define-key keymap (kbd "d") 'inf-iex-dbg-remove-tp)
+    (define-key keymap (kbd "c") 'inf-iex-dbg-toggle-tp)
     keymap)
   "Keymap for `inf-iex-dbg-list-mode'.")
 
