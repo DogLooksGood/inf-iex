@@ -118,7 +118,7 @@
   "Start IEx session in Emacs."
   (interactive)
   (let ((inf-iex-buffer (inf-iex--make-iex-buffer-name)))
-    (if (and inf-iex-buffer (comint-check-proc inf-iex-buffer))
+    (if (get-buffer inf-iex-buffer)
         (pop-to-buffer inf-iex-buffer t)
       (let* ((proj-root (inf-iex--project-root))
              (name (inf-iex--make-iex-buffer-name))
