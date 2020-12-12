@@ -1,4 +1,4 @@
-;;; inf-iex-pry.el --- DBG support for INF IEx       -*- lexical-binding: t; -*-
+;;; inf-iex-dbg.el --- DBG support for INF IEx       -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020  DESKTOP-E16H44U
 
@@ -29,6 +29,10 @@
 (require 'inf-iex-send)
 (require 'inf-iex-eval)
 (require 'inf-iex-parser)
+
+(require 'cl-lib)
+(require 'dash)
+(require 'subr-x)
 
 (defvar-local inf-iex--dbg-current-project nil
   "Current project path, used in dbg list buffer.")
@@ -241,3 +245,4 @@ end, 0});%s;:dbg.p(:all, :c);%s after :dbg.stop_clear() end"
 
 
 (provide 'inf-iex-dbg)
+;;; inf-iex-dbg.el ends here

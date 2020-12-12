@@ -63,7 +63,7 @@
 (require 'inf-iex-send)
 (require 'inf-iex-observer)
 (require 'inf-iex-pry)
-(require 'inf-iex-dbg)
+;; (require 'inf-iex-dbg)
 (require 'inf-iex-tracer)
 
 (defvar inf-iex-minor-mode-map

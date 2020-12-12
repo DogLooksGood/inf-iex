@@ -1,4 +1,4 @@
-;;; inf-iex-send.el --- inf-iex code buffer parser     -*- lexical-binding: t; -*-
+;;; inf-iex-parser.el --- inf-iex code buffer parser     -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020  Shi Tianshu
 

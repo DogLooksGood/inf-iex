@@ -1,4 +1,4 @@
-;;; inf-iex-pry.el --- Tracer support for INF IEx       -*- lexical-binding: t; -*-
+;;; inf-iex-tracer.el --- Tracer support for INF IEx       -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020  DESKTOP-E16H44U
 
@@ -175,3 +175,4 @@ InfIExCallerFinder.run()" prefix-value)))
   (inf-iex--trace-mode-init))
 
 (provide 'inf-iex-tracer)
+;;; inf-iex-tracer.el ends here
