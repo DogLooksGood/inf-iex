@@ -24,8 +24,11 @@
 
 ;;; Code:
 
+(require 'elixir-mode)
 (require 'inf-iex-send)
 (require 'dash)
+
+(declare-function inf-iex-minor-mode "inf-iex")
 
 (defface inf-iex--back-button
   '((((class color) (background dark))

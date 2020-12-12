@@ -24,8 +24,10 @@
 
 ;;; Code:
 
+(require 'elixir-mode)
 (require 'inf-iex-util)
 (require 'inf-iex-send)
+(require 'inf-iex-eval)
 (require 'inf-iex-parser)
 
 (defvar-local inf-iex--dbg-current-project nil

@@ -26,6 +26,7 @@
 
 (require 'inf-iex-util)
 (require 'inf-iex-send)
+(require 'inf-iex-eval)
 (require 'dash)
 
 (defconst inf-iex--find-caller-buffer
@@ -78,12 +79,14 @@ InfIExCallerFinder.run()" prefix-value)))
            (-let* (((fma . items) group))
              (insert fma "\n")
              (cl-loop for item in items do
-                      (-let* (((file line-no fma) item))
+                      (-let* (((file line-no _fma) item))
                         (insert "  |- ")
                         (insert-button
                          (format "%s:%s" (file-relative-name file inf-iex--tracer-current-project) line-no)
                          'follow-link t
-                         'action (lambda (_) (find-file file) (goto-line (string-to-number line-no))))
+                         'action (lambda (_) (find-file file)
+                                   (goto-char (point-min))
+                                   (forward-line (1- (string-to-number line-no)))))
                         (insert "\n")))))
   (goto-char (point-min))
   (inf-iex-tracer-next))

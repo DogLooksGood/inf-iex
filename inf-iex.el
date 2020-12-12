@@ -4,7 +4,7 @@
 
 ;; Author: Shi Tianshu
 ;; Keywords: languages, tools
-;; Package-Requires: ((emacs "27.0") (dash "2.12.0") (cl-lib "0.6.1") (emamux "0.14") (project "0.5.2"))
+;; Package-Requires: ((emacs "27.0") (dash "2.12.0") (cl-lib "0.6.1") (emamux "0.14") (project "0.5.2") (elixir-mode "2.3.1"))
 ;; Version: 0.0.1
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -98,6 +98,7 @@
     keymap)
   "Keymap for IEx buffer.")
 
+;;;###autoload
 (define-minor-mode inf-iex-minor-mode
   "Minor mode for Interaction with IEx."
   nil
@@ -111,7 +112,7 @@
   "IEx"
   inf-iex-mode-map
   (setq-local comint-prompt-read-only t)
-  (setq-local comint-prompt-regexp "^iex([^ ]+)[0-9]*>"))
+  (setq-local comint-prompt-regexp "^iex([0-9]+)>"))
 
 (defun inf-iex-start ()
   "Start IEx session in Emacs."
