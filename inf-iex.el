@@ -114,6 +114,9 @@
   (setq-local comint-prompt-read-only t)
   (setq-local comint-prompt-regexp "^iex([0-9]+)>"))
 
+(defvar inf-iex-default-iex-command "iex -S mix"
+  "Default IEx command to start.")
+
 (defun inf-iex-start ()
   "Start IEx session in Emacs."
   (interactive)
@@ -122,7 +125,7 @@
         (pop-to-buffer inf-iex-buffer t)
       (let* ((proj-root (inf-iex--project-root))
              (name (inf-iex--make-iex-buffer-name))
-             (cmd (split-string (read-from-minibuffer "Command to start IEx session: " "iex -S mix")))
+             (cmd (split-string (read-from-minibuffer "Command to start IEx session: " inf-iex-default-iex-command)))
              (env (read-from-minibuffer "Environment: " "dev"))
              (exe (car cmd))
              (args (cdr cmd))
